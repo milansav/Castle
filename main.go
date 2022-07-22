@@ -1,0 +1,26 @@
+package main
+
+import (
+	"fmt"
+	"github.com/milansav/Castle/lexer"
+	"io/ioutil"
+	"os"
+)
+
+func main() {
+	fmt.Println("Hello, World")
+
+	contents, err := ioutil.ReadFile("test.cst")
+
+	if err != nil {
+		_ = fmt.Errorf("Error: %s\n", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("Loaded file contents: \n%s\n", string(contents))
+
+	mainLexer := lexer.Create(string(contents))
+	lexer.Start(&mainLexer)
+
+	fmt.Println(mainLexer.Lexemes)
+}
