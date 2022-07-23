@@ -83,19 +83,37 @@ func expressionBinary(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_E
 }
 
 func PrintTree(tree *AST_Expression, depth int) {
+
+	prefixChar := "  "
+	prefix := ""
+
+	for i := 0; i < depth; i++ {
+		prefix += prefixChar
+	}
+
 	if(tree.eType == ET_BINARY) {
-		fmt.Println("Binary operation")
 
 		switch tree.operator {
 			case lexer.LT_PLUS:
-				fmt.Println("Plus operation")
+				fmt.Println(prefix + "[ ADD ]")
 			case lexer.LT_MINUS:
-				fmt.Println("Minus operation")
+				fmt.Println(prefix + "[ SUBTRACT ]")
 			case lexer.LT_MULTIPLY:
-				fmt.Println("Multiply operation")
+				fmt.Println(prefix + "[ MULTIPLY ]")
 			case lexer.LT_DIVIDE:
-				fmt.Println("Divide operation")
+				fmt.Println(prefix + "[ DIVIDE ]")
 		}
+
+		fmt.Println(prefix + prefixChar + "[ LHS ]")
+
+		PrintTree(tree.lhs, depth + 1)
+
+		fmt.Println(prefix + prefixChar + "[ RHS ]")
+
+		PrintTree(tree.rhs, depth + 1)
+	} else if(tree.eType == ET_LITERAL) {
+		fmt.Println(prefix + "[ VALUE ]")
+		fmt.Println(prefix + prefixChar + tree.value)
 	}
 }
 

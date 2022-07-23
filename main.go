@@ -24,5 +24,10 @@ func main() {
 	lexer.Start(&mainLexer)
 
 	mainParser := parser.Create(mainLexer)
-	parser.Start(&mainParser)
+	result := parser.Start(&mainParser)
+
+	fmt.Println(string(contents))
+	for _, value := range(result) {
+		parser.PrintTree(value, 0)
+	}
 }
