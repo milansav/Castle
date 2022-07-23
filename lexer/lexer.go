@@ -24,17 +24,18 @@ type Lexeme struct {
 type LexemeType int
 
 const (
-	ADD LexemeType = iota
-	SUBTRACT
-	MULTIPLY
-	DIVIDE
-	MODULO
-	LPAREN
-	RPAREN
-	KEYWORD
-	LITERAL
-	NUMBER
-	END
+	LT_PLUS LexemeType = iota
+	LT_MINUS
+	LT_MULTIPLY
+	LT_DIVIDE
+	LT_MODULO
+	LT_LPAREN
+	LT_RPAREN
+	LT_KEYWORD
+	LT_LITERAL
+	LT_NUMBER
+	LT_NONE
+	LT_END
 )
 func Create(source string) Lexer {
 
@@ -65,7 +66,8 @@ func Start(lexer *Lexer) {
 			lexer.Lexemes = append(lexer.Lexemes, lexeme)
 			continue
 		} else {
-			//TODO: Process other characters
+			lexeme := other(lexer)
+			lexer.Lexemes = append(lexer.Lexemes, lexeme)
 		}
 
 	}
@@ -85,7 +87,7 @@ func literal(lexer *Lexer) Lexeme {
 
 	fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
 
-	lexeme := Lexeme{Label: lexer.source[start:end], Type: LITERAL}
+	lexeme := Lexeme{Label: lexer.source[start:end], Type: LT_LITERAL}
 
 	return lexeme
 }
@@ -104,13 +106,39 @@ func number(lexer *Lexer) Lexeme {
 
 	fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
 
-	lexeme := Lexeme{Label: lexer.source[start:end], Type: NUMBER}
+	lexeme := Lexeme{Label: lexer.source[start:end], Type: LT_NUMBER}
+
+	return lexeme
+}
+
+func other(lexer *Lexer) Lexeme {
+	target := currentRune(lexer)
+
+	lexeme := Lexeme{Label: string(target), Type: LT_NONE}
+
+	if(target == '+') {
+		lexeme.Type = LT_PLUS
+		fmt.Println("Is plus")
+	} else if(target == '-') {
+		lexeme.Type = LT_MINUS
+		fmt.Println("Is minus")
+	} else if(target == '*') {
+		lexeme.Type = LT_MULTIPLY
+		fmt.Println("Is multiply")
+	} else if(target == '/') {
+		lexeme.Type = LT_DIVIDE
+		fmt.Println("Is divide")
+	}
+
+	step(lexer)
 
 	return lexeme
 }
 
 func whitespace(lexer *Lexer) {
-	step(lexer)
+	for(unicode.IsSpace(currentRune(lexer))) {
+		step(lexer)
+	}
 }
 
 func canStep(lexer *Lexer) bool {
