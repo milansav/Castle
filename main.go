@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/milansav/Castle/lexer"
+	"github.com/milansav/Castle/parser"
 	"io/ioutil"
 	"os"
 )
@@ -21,6 +22,9 @@ func main() {
 
 	mainLexer := lexer.Create(string(contents))
 	lexer.Start(&mainLexer)
+
+	mainParser := parser.Create(mainLexer)
+	parser.Start(&mainParser)
 
 	fmt.Println(mainLexer.Lexemes)
 }
