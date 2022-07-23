@@ -19,6 +19,8 @@ type Lexer struct {
 type Lexeme struct {
 	Label string
 	Type  LexemeType
+	Row int
+	Column int
 }
 
 type LexemeType int
@@ -31,6 +33,7 @@ const (
 	LT_MODULO
 	LT_LPAREN
 	LT_RPAREN
+	LT_BANG
 	LT_KEYWORD
 	LT_LITERAL
 	LT_NUMBER
@@ -39,15 +42,10 @@ const (
 )
 func Create(source string) Lexer {
 
-	currentRune, size := utf8.DecodeRuneInString(source)
-	nextRune, _ := utf8.DecodeRuneInString(source[size:])
-
 	return Lexer{
 		Lexemes:     make([]Lexeme, 0),
 		source:      source,
 		currentStep: 0,
-		currentRune: currentRune,
-		nextRune:    nextRune,
 	}
 }
 

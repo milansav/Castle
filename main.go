@@ -25,6 +25,4 @@ func main() {
 
 	mainParser := parser.Create(mainLexer)
 	parser.Start(&mainParser)
-
-	fmt.Println(mainLexer.Lexemes)
 }
