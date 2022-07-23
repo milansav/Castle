@@ -6,25 +6,24 @@ import (
 )
 
 type Parser struct {
-	lexemes []lexer.Lexeme
+	lexemes     []lexer.Lexeme
 	currentStep int
 }
 
 type ExpressionType int
 
 const (
-
 	ET_BINARY ExpressionType = iota
 	ET_UNARY
 	ET_LITERAL
 )
 
 type AST_Expression struct {
-	eType ExpressionType
-	lhs *AST_Expression
+	eType    ExpressionType
+	lhs      *AST_Expression
 	operator lexer.LexemeType
-	rhs *AST_Expression
-	value string
+	rhs      *AST_Expression
+	value    string
 }
 
 func expressionLiteral(value string) *AST_Expression {
@@ -38,17 +37,17 @@ func expressionLiteral(value string) *AST_Expression {
 
 func expressionUnary(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_rhs := &AST_Expression{
-		eType: rhs.eType,
-		lhs: rhs.lhs,
+		eType:    rhs.eType,
+		lhs:      rhs.lhs,
 		operator: rhs.operator,
-		rhs: rhs.rhs,
-		value: rhs.value,
+		rhs:      rhs.rhs,
+		value:    rhs.value,
 	}
 
 	expr := &AST_Expression{
-		eType: ET_UNARY,
+		eType:    ET_UNARY,
 		operator: operator,
-		rhs: _rhs,
+		rhs:      _rhs,
 	}
 
 	return expr
@@ -56,27 +55,27 @@ func expressionUnary(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expres
 
 func expressionBinary(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_lhs := &AST_Expression{
-		eType: lhs.eType,
-		lhs: lhs.lhs,
+		eType:    lhs.eType,
+		lhs:      lhs.lhs,
 		operator: lhs.operator,
-		rhs: lhs.rhs,
-		value: lhs.value,
+		rhs:      lhs.rhs,
+		value:    lhs.value,
 	}
 
 	_rhs := &AST_Expression{
-		eType: rhs.eType,
-		lhs: rhs.lhs,
+		eType:    rhs.eType,
+		lhs:      rhs.lhs,
 		operator: rhs.operator,
-		rhs: rhs.rhs,
-		value: rhs.value,
+		rhs:      rhs.rhs,
+		value:    rhs.value,
 	}
 
 	expr := &AST_Expression{
-		eType: ET_BINARY,
-		lhs: _lhs,
+		eType:    ET_BINARY,
+		lhs:      _lhs,
 		operator: operator,
-		rhs: _rhs,
-		value: "",
+		rhs:      _rhs,
+		value:    "",
 	}
 
 	return expr
@@ -91,27 +90,27 @@ func PrintTree(tree *AST_Expression, depth int) {
 		prefix += prefixChar
 	}
 
-	if(tree.eType == ET_BINARY) {
+	if tree.eType == ET_BINARY {
 
 		switch tree.operator {
-			case lexer.LT_PLUS:
-				fmt.Println(prefix + "[ ADD ]")
-			case lexer.LT_MINUS:
-				fmt.Println(prefix + "[ SUBTRACT ]")
-			case lexer.LT_MULTIPLY:
-				fmt.Println(prefix + "[ MULTIPLY ]")
-			case lexer.LT_DIVIDE:
-				fmt.Println(prefix + "[ DIVIDE ]")
+		case lexer.LT_PLUS:
+			fmt.Println(prefix + "[ ADD ]")
+		case lexer.LT_MINUS:
+			fmt.Println(prefix + "[ SUBTRACT ]")
+		case lexer.LT_MULTIPLY:
+			fmt.Println(prefix + "[ MULTIPLY ]")
+		case lexer.LT_DIVIDE:
+			fmt.Println(prefix + "[ DIVIDE ]")
 		}
 
 		fmt.Println(prefix + prefixChar + "[ LHS ]")
 
-		PrintTree(tree.lhs, depth + 1)
+		PrintTree(tree.lhs, depth+1)
 
 		fmt.Println(prefix + prefixChar + "[ RHS ]")
 
-		PrintTree(tree.rhs, depth + 1)
-	} else if(tree.eType == ET_LITERAL) {
+		PrintTree(tree.rhs, depth+1)
+	} else if tree.eType == ET_LITERAL {
 		fmt.Println(prefix + "[ VALUE ]")
 		fmt.Println(prefix + prefixChar + tree.value)
 	}
@@ -125,9 +124,9 @@ func Start(parser *Parser) []*AST_Expression {
 
 	expressions := make([]*AST_Expression, 0)
 
-	for(canStep(parser)) {
+	for canStep(parser) {
 
-		if(currentLexeme(parser).Type == lexer.LT_NUMBER) {
+		if currentLexeme(parser).Type == lexer.LT_NUMBER {
 			expr := expression(parser)
 			expressions = append(expressions, expr)
 			continue
@@ -141,7 +140,7 @@ func Start(parser *Parser) []*AST_Expression {
 
 /*
 
-Grammar 
+Grammar
 
 expression -> term
 
@@ -153,6 +152,8 @@ factor -> unary (( LT_DIVIDE | LT_MULTIPLY ) unary)*
 
 unary -> ( LT_BANG | LT_MINUS | LT_PLUS ) unary | primary
 */
+
+//TODO: Finish to satisfy grammar
 func primary(parser *Parser) *AST_Expression {
 	rhs := currentLexeme(parser).Label
 	fmt.Println(rhs)
@@ -172,13 +173,13 @@ func expression(parser *Parser) *AST_Expression {
 		if !one {
 			return false
 		}
-		two := currentLexeme(parser).Type == lexer.LT_MINUS 
+		two := currentLexeme(parser).Type == lexer.LT_MINUS
 		three := currentLexeme(parser).Type == lexer.LT_PLUS
 
 		return (two || three)
 	}
 
-	for(condition()) {
+	for condition() {
 		operator := currentLexeme(parser).Type
 		//fmt.Println(operator)
 		step(parser)
@@ -192,7 +193,7 @@ func expression(parser *Parser) *AST_Expression {
 func term(parser *Parser) *AST_Expression {
 
 	fmt.Println("Term")
-	
+
 	lhs := factor(parser)
 
 	condition := func() bool {
@@ -200,13 +201,13 @@ func term(parser *Parser) *AST_Expression {
 		if !one {
 			return false
 		}
-		two := currentLexeme(parser).Type == lexer.LT_MINUS 
+		two := currentLexeme(parser).Type == lexer.LT_MINUS
 		three := currentLexeme(parser).Type == lexer.LT_PLUS
 
 		return (two || three)
 	}
 
-	for(condition()) {
+	for condition() {
 		operator := currentLexeme(parser).Type
 		//fmt.Println(operator)
 		step(parser)
@@ -220,7 +221,7 @@ func term(parser *Parser) *AST_Expression {
 func factor(parser *Parser) *AST_Expression {
 
 	fmt.Println("Factor")
-	
+
 	lhs := unary(parser)
 
 	condition := func() bool {
@@ -228,13 +229,13 @@ func factor(parser *Parser) *AST_Expression {
 		if !one {
 			return false
 		}
-		two := currentLexeme(parser).Type == lexer.LT_MULTIPLY 
+		two := currentLexeme(parser).Type == lexer.LT_MULTIPLY
 		three := currentLexeme(parser).Type == lexer.LT_DIVIDE
 
 		return (two || three)
 	}
 
-	for(condition()) {
+	for condition() {
 		operator := currentLexeme(parser).Type
 		//fmt.Println(operator)
 		step(parser)
@@ -248,8 +249,8 @@ func factor(parser *Parser) *AST_Expression {
 func unary(parser *Parser) *AST_Expression {
 
 	fmt.Println("Unary")
-	
-	if(currentLexeme(parser).Type == lexer.LT_BANG || currentLexeme(parser).Type == lexer.LT_MINUS) {
+
+	if currentLexeme(parser).Type == lexer.LT_BANG || currentLexeme(parser).Type == lexer.LT_MINUS {
 		operator := currentLexeme(parser).Type
 		//fmt.Println(operator)
 		step(parser)

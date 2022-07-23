@@ -17,9 +17,9 @@ type Lexer struct {
 }
 
 type Lexeme struct {
-	Label string
-	Type  LexemeType
-	Row int
+	Label  string
+	Type   LexemeType
+	Row    int
 	Column int
 }
 
@@ -40,6 +40,7 @@ const (
 	LT_NONE
 	LT_END
 )
+
 func Create(source string) Lexer {
 
 	return Lexer{
@@ -75,7 +76,7 @@ func literal(lexer *Lexer) Lexeme {
 
 	start := lexer.currentStep
 
-	for(unicode.IsLetter(currentRune(lexer)) || unicode.IsDigit(currentRune(lexer))) {
+	for unicode.IsLetter(currentRune(lexer)) || unicode.IsDigit(currentRune(lexer)) {
 		step(lexer)
 	}
 
@@ -94,7 +95,7 @@ func number(lexer *Lexer) Lexeme {
 
 	start := lexer.currentStep
 
-	for(unicode.IsDigit(currentRune(lexer))) {
+	for unicode.IsDigit(currentRune(lexer)) {
 		step(lexer)
 	}
 
@@ -114,16 +115,16 @@ func other(lexer *Lexer) Lexeme {
 
 	lexeme := Lexeme{Label: string(target), Type: LT_NONE}
 
-	if(target == '+') {
+	if target == '+' {
 		lexeme.Type = LT_PLUS
 		fmt.Println("Is plus")
-	} else if(target == '-') {
+	} else if target == '-' {
 		lexeme.Type = LT_MINUS
 		fmt.Println("Is minus")
-	} else if(target == '*') {
+	} else if target == '*' {
 		lexeme.Type = LT_MULTIPLY
 		fmt.Println("Is multiply")
-	} else if(target == '/') {
+	} else if target == '/' {
 		lexeme.Type = LT_DIVIDE
 		fmt.Println("Is divide")
 	}
@@ -134,7 +135,7 @@ func other(lexer *Lexer) Lexeme {
 }
 
 func whitespace(lexer *Lexer) {
-	for(unicode.IsSpace(currentRune(lexer))) {
+	for unicode.IsSpace(currentRune(lexer)) {
 		step(lexer)
 	}
 }
