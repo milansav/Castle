@@ -98,7 +98,7 @@ func expressionGroup(lhs *AST_Expression) *AST_Expression {
 
 func PrintTree(tree *AST_Expression, depth int) {
 
-	prefixChar := "  "
+	prefixChar := "≫ "
 	prefix := ""
 
 	for i := 0; i < depth; i++ {
@@ -108,7 +108,7 @@ func PrintTree(tree *AST_Expression, depth int) {
 	if tree.eType == ET_GROUP {
 		fmt.Println(prefix + "[ GROUP ]")
 
-		fmt.Println(prefix + prefixChar + "[ LHS ]")
+		//fmt.Println(prefix + prefixChar + "[ LHS ]")
 
 		PrintTree(tree.lhs, depth+1)
 	} else if tree.eType == ET_BINARY {
@@ -124,11 +124,11 @@ func PrintTree(tree *AST_Expression, depth int) {
 			fmt.Println(prefix + "[ DIVIDE ]")
 		}
 
-		fmt.Println(prefix + prefixChar + "[ LHS ]")
+		//fmt.Println(prefix + prefixChar + "[ LHS ]")
 
 		PrintTree(tree.lhs, depth+1)
 
-		fmt.Println(prefix + prefixChar + "[ RHS ]")
+		//fmt.Println(prefix + prefixChar + "[ RHS ]")
 
 		PrintTree(tree.rhs, depth+1)
 	} else if tree.eType == ET_LITERAL {
