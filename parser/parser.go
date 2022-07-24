@@ -17,6 +17,7 @@ const (
 	ET_BINARY ExpressionType = iota
 	ET_UNARY
 	ET_LITERAL
+	ET_GROUP
 )
 
 type AST_Expression struct {
@@ -82,6 +83,19 @@ func expressionBinary(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_E
 	return expr
 }
 
+func expressionGroup(lhs *AST_Expression) *AST_Expression {
+
+	expr := &AST_Expression{
+		eType:    ET_GROUP,
+		lhs:      lhs,
+		operator: lexer.LT_NONE,
+		rhs:      nil,
+		value:    "",
+	}
+
+	return expr
+}
+
 func PrintTree(tree *AST_Expression, depth int) {
 
 	prefixChar := "  "
@@ -91,7 +105,13 @@ func PrintTree(tree *AST_Expression, depth int) {
 		prefix += prefixChar
 	}
 
-	if tree.eType == ET_BINARY {
+	if tree.eType == ET_GROUP {
+		fmt.Println(prefix + "[ GROUP ]")
+
+		fmt.Println(prefix + prefixChar + "[ LHS ]")
+
+		PrintTree(tree.lhs, depth+1)
+	} else if tree.eType == ET_BINARY {
 
 		switch tree.operator {
 		case lexer.LT_PLUS:
@@ -127,13 +147,17 @@ func Start(parser *Parser) []*AST_Expression {
 
 	for canStep(parser) {
 
-		if currentLexeme(parser).Type == lexer.LT_NUMBER {
+		/*if currentLexeme(parser).Type == lexer.LT_NUMBER {
 			expr := expression(parser)
 			expressions = append(expressions, expr)
 			continue
 		} else {
 			step(parser)
-		}
+		}*/
+
+		expr := expression(parser)
+		expressions = append(expressions, expr)
+		continue
 	}
 
 	return expressions
@@ -156,6 +180,7 @@ unary -> ( LT_BANG | LT_MINUS | LT_PLUS ) unary | primary
 
 //TODO: Finish to satisfy grammar
 func primary(parser *Parser) *AST_Expression {
+	fmt.Println("Primary")
 
 	c := currentLexeme(parser).Type
 
@@ -169,8 +194,10 @@ func primary(parser *Parser) *AST_Expression {
 		step(parser)
 		expr := expression(parser)
 
+		expr = expressionGroup(expr)
+
 		//TODO: Check if current symbol is )
-		step(parser)
+		fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
 		return expr
 	} else {
 		log.Panic("Unexpected path")
@@ -291,7 +318,11 @@ func step(parser *Parser) {
 }
 
 func currentLexeme(parser *Parser) lexer.Lexeme {
-	return parser.lexemes[parser.currentStep]
+	currLexeme := parser.lexemes[parser.currentStep]
+
+	fmt.Printf("Current Lexeme: %s\n", currLexeme.Label)
+
+	return currLexeme
 }
 
 func nextLexeme(parser *Parser) lexer.Lexeme {

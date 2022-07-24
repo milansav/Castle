@@ -127,6 +127,9 @@ func other(lexer *Lexer) Lexeme {
 	} else if target == '/' {
 		lexeme.Type = LT_DIVIDE
 		fmt.Println("Is divide")
+	} else if target == '(' {
+		lexeme.Type = LT_LPAREN
+		fmt.Println("Is left parentheses")
 	}
 
 	step(lexer)
