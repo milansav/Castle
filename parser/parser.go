@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"github.com/milansav/Castle/lexer"
+	"log"
 )
 
 type Parser struct {
@@ -155,11 +156,26 @@ unary -> ( LT_BANG | LT_MINUS | LT_PLUS ) unary | primary
 
 //TODO: Finish to satisfy grammar
 func primary(parser *Parser) *AST_Expression {
-	rhs := currentLexeme(parser).Label
-	fmt.Println(rhs)
 
-	expr := expressionLiteral(rhs)
-	return expr
+	c := currentLexeme(parser).Type
+
+	if c == lexer.LT_NUMBER {
+		rhs := currentLexeme(parser).Label
+		fmt.Println(rhs)
+
+		expr := expressionLiteral(rhs)
+		return expr
+	} else if c == lexer.LT_LPAREN {
+		step(parser)
+		expr := expression(parser)
+
+		//TODO: Check if current symbol is )
+		step(parser)
+		return expr
+	} else {
+		log.Panic("Unexpected path")
+		return nil
+	}
 }
 
 func expression(parser *Parser) *AST_Expression {
