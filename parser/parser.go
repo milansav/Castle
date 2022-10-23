@@ -178,7 +178,7 @@ factor -> unary (( LT_DIVIDE | LT_MULTIPLY ) unary)*
 unary -> ( LT_BANG | LT_MINUS | LT_PLUS ) unary | primary
 */
 
-//TODO: Finish to satisfy grammar
+// TODO: Finish to satisfy grammar
 func primary(parser *Parser) *AST_Expression {
 	fmt.Println("Primary")
 
