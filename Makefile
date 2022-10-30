@@ -5,7 +5,7 @@ build:
 	go build -o dist/castle
 
 install: build
-	sudo mv dist/castle /usr/local/bin/castle
+	sudo cp dist/castle /usr/local/bin/castle
 
 clean:
 	[ -d dist ] && rm -rf dist
