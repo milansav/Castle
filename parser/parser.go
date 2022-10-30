@@ -180,13 +180,13 @@ unary -> ( LT_BANG | LT_MINUS | LT_PLUS ) unary | primary
 
 // TODO: Finish to satisfy grammar
 func primary(parser *Parser) *AST_Expression {
-	fmt.Println("Primary")
+	//fmt.Println("Primary")
 
 	c := currentLexeme(parser).Type
 
 	if c == lexer.LT_NUMBER {
 		rhs := currentLexeme(parser).Label
-		fmt.Println(rhs)
+		//fmt.Println(rhs)
 
 		expr := expressionLiteral(rhs)
 		return expr
@@ -197,7 +197,7 @@ func primary(parser *Parser) *AST_Expression {
 		expr = expressionGroup(expr)
 
 		//TODO: Check if current symbol is )
-		fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
+		//fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
 		return expr
 	} else {
 		log.Panic("Unexpected path")
@@ -207,7 +207,7 @@ func primary(parser *Parser) *AST_Expression {
 
 func expression(parser *Parser) *AST_Expression {
 
-	fmt.Println("Expression")
+	//fmt.Println("Expression")
 
 	lhs := term(parser)
 
@@ -235,7 +235,7 @@ func expression(parser *Parser) *AST_Expression {
 
 func term(parser *Parser) *AST_Expression {
 
-	fmt.Println("Term")
+	//fmt.Println("Term")
 
 	lhs := factor(parser)
 
@@ -263,7 +263,7 @@ func term(parser *Parser) *AST_Expression {
 
 func factor(parser *Parser) *AST_Expression {
 
-	fmt.Println("Factor")
+	//fmt.Println("Factor")
 
 	lhs := unary(parser)
 
@@ -291,7 +291,7 @@ func factor(parser *Parser) *AST_Expression {
 
 func unary(parser *Parser) *AST_Expression {
 
-	fmt.Println("Unary")
+	//fmt.Println("Unary")
 
 	if currentLexeme(parser).Type == lexer.LT_BANG || currentLexeme(parser).Type == lexer.LT_MINUS {
 		operator := currentLexeme(parser).Type
@@ -320,7 +320,7 @@ func step(parser *Parser) {
 func currentLexeme(parser *Parser) lexer.Lexeme {
 	currLexeme := parser.lexemes[parser.currentStep]
 
-	fmt.Printf("Current Lexeme: %s\n", currLexeme.Label)
+	//fmt.Printf("Current Lexeme: %s\n", currLexeme.Label)
 
 	return currLexeme
 }

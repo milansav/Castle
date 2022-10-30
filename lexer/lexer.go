@@ -1,7 +1,6 @@
 package lexer
 
 import (
-	"fmt"
 	"unicode"
 	"unicode/utf8"
 )
@@ -82,9 +81,9 @@ func literal(lexer *Lexer) Lexeme {
 
 	end := lexer.currentStep
 
-	length := end - start
+	//length := end - start
 
-	fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
+	//fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
 
 	lexeme := Lexeme{Label: lexer.source[start:end], Type: LT_LITERAL}
 
@@ -101,9 +100,9 @@ func number(lexer *Lexer) Lexeme {
 
 	end := lexer.currentStep
 
-	length := end - start
+	//length := end - start
 
-	fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
+	//fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
 
 	lexeme := Lexeme{Label: lexer.source[start:end], Type: LT_NUMBER}
 
@@ -117,19 +116,19 @@ func other(lexer *Lexer) Lexeme {
 
 	if target == '+' {
 		lexeme.Type = LT_PLUS
-		fmt.Println("Is plus")
+		//fmt.Println("Is plus")
 	} else if target == '-' {
 		lexeme.Type = LT_MINUS
-		fmt.Println("Is minus")
+		//fmt.Println("Is minus")
 	} else if target == '*' {
 		lexeme.Type = LT_MULTIPLY
-		fmt.Println("Is multiply")
+		//fmt.Println("Is multiply")
 	} else if target == '/' {
 		lexeme.Type = LT_DIVIDE
-		fmt.Println("Is divide")
+		//fmt.Println("Is divide")
 	} else if target == '(' {
 		lexeme.Type = LT_LPAREN
-		fmt.Println("Is left parentheses")
+		//fmt.Println("Is left parentheses")
 	}
 
 	step(lexer)
