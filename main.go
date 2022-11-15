@@ -25,6 +25,10 @@ func main() {
 		mainLexer := lexer.Create(string(contents))
 		lexer.Start(&mainLexer)
 
+		for _, element := range mainLexer.Lexemes {
+			fmt.Printf("%s\n", lexer.LexemeTypeLabels[element.Type])
+		}
+
 		mainParser := parser.Create(mainLexer)
 		result := parser.Start(&mainParser)
 

@@ -33,6 +33,8 @@ const (
 	LT_MODULO
 	LT_POWER
 
+	LT_EQUALS
+
 	//Parentheses
 	LT_LPAREN
 	LT_RPAREN
@@ -42,7 +44,7 @@ const (
 	//Binary operations
 	LT_BANG
 
-	LT_LITERAL
+	LT_IDENTIFIER
 	LT_NUMBER
 
 	//Keywords
@@ -54,12 +56,15 @@ const (
 	//Misc operators
 	LT_LAMBDA
 
+	LT_COMMA
+	LT_PERIOD
+
 	LT_NONE
 	LT_END
 )
 
 var LexemeTypeLabels = map[LexemeType]string{
-	//Arithmetic operators
+	//Binary operators
 	LT_PLUS:     "LT_PLUS",
 	LT_MINUS:    "LT_MINUS",
 	LT_MULTIPLY: "LT_MULTIPLY",
@@ -67,17 +72,18 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_MODULO:   "LT_MODULO",
 	LT_POWER:    "LT_POWER",
 
+	LT_EQUALS: "LT_EQUALS",
+
 	//Parentheses
 	LT_LPAREN: "LT_LPAREN",
 	LT_RPAREN: "LT_RPAREN",
 	LT_LCURLY: "LT_LCURLY",
 	LT_RCURLY: "LT_RCURLY",
 
-	//Binary operations
 	LT_BANG: "LT_BANG",
 
-	LT_LITERAL: "LT_LITERAL",
-	LT_NUMBER:  "LT_NUMBER",
+	LT_IDENTIFIER: "LT_IDENTIFIER",
+	LT_NUMBER:     "LT_NUMBER",
 
 	//Keywords
 	LT_CONST:  "LT_CONST",
@@ -86,10 +92,20 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_ELSEIF: "LT_ELSEIF",
 
 	//Misc operators
-	LT_LAMBDA: "LT_ELSEIF",
+	LT_LAMBDA: "LT_LAMBDA",
+
+	LT_COMMA:  "LT_COMMA",
+	LT_PERIOD: "LT_PERIOD",
 
 	LT_NONE: "LT_NONE",
 	LT_END:  "LT_END",
+}
+
+var keywords = map[string]LexemeType{
+	"const":  LT_CONST,
+	"if":     LT_IF,
+	"else":   LT_ELSE,
+	"elseif": LT_ELSEIF,
 }
 
 func Create(source string) Lexer {
@@ -104,14 +120,29 @@ func Create(source string) Lexer {
 func Start(lexer *Lexer) {
 	for canStep(lexer) {
 
-		if unicode.IsSpace(currentRune(lexer)) {
+		c := currentRune(lexer)
+
+		if c == '/' {
+			switch nextRune(lexer) {
+			case '/':
+				lineComment(lexer)
+				//lexer.Lexemes = append(lexer.Lexemes, lexeme)
+				continue
+				//case '*':
+				//	lexeme := blockComment(lexer)
+				//	lexer.Lexemes = append(lexer.Lexemes, lexeme)
+				//	continue
+			}
+		}
+
+		if unicode.IsSpace(c) {
 			whitespace(lexer)
 			continue
-		} else if unicode.IsLetter(currentRune(lexer)) {
-			lexeme := literal(lexer)
+		} else if unicode.IsLetter(c) {
+			lexeme := identifier(lexer)
 			lexer.Lexemes = append(lexer.Lexemes, lexeme)
 			continue
-		} else if unicode.IsDigit(currentRune(lexer)) {
+		} else if unicode.IsDigit(c) {
 			lexeme := number(lexer)
 			lexer.Lexemes = append(lexer.Lexemes, lexeme)
 			continue
@@ -123,7 +154,24 @@ func Start(lexer *Lexer) {
 	}
 }
 
-func literal(lexer *Lexer) Lexeme {
+func lineComment(lexer *Lexer) Lexeme {
+	for {
+		if currentRune(lexer) != '\n' && canStep(lexer) {
+			step(lexer)
+			continue
+		}
+		break
+	}
+
+	return Lexeme{}
+}
+
+func blockComment(lexer *Lexer) Lexeme {
+
+	return Lexeme{}
+}
+
+func identifier(lexer *Lexer) Lexeme {
 
 	start := lexer.currentStep
 
@@ -137,7 +185,17 @@ func literal(lexer *Lexer) Lexeme {
 
 	//fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
 
-	lexeme := Lexeme{Label: lexer.source[start:end], Type: LT_LITERAL}
+	lexeme := Lexeme{Label: lexer.source[start:end], Type: LT_IDENTIFIER}
+
+	lexeme = getKeyword(lexeme)
+
+	return lexeme
+}
+
+func getKeyword(lexeme Lexeme) Lexeme {
+	if _, ok := keywords[lexeme.Label]; ok {
+		lexeme.Type = keywords[lexeme.Label]
+	}
 
 	return lexeme
 }
@@ -170,6 +228,13 @@ func other(lexer *Lexer) Lexeme {
 	lexeme := Lexeme{Label: string(target), Type: LT_NONE}
 
 	switch target {
+	case '=':
+		lexeme.Type = LT_EQUALS
+
+		if nextRune(lexer) == '>' {
+			lexeme.Type = LT_LAMBDA
+			step(lexer)
+		}
 	case '+':
 		lexeme.Type = LT_PLUS
 	case '-':
@@ -190,6 +255,10 @@ func other(lexer *Lexer) Lexeme {
 		lexeme.Type = LT_LCURLY
 	case '}':
 		lexeme.Type = LT_RCURLY
+	case ',':
+		lexeme.Type = LT_COMMA
+	case '.':
+		lexeme.Type = LT_PERIOD
 	}
 
 	step(lexer)

@@ -1,0 +1,8 @@
+//function with one statement
+const MyFunction = (a) => a;
+
+//function with more statements
+const MyFunction = (a, b) => {
+    const c = a + b;
+    c;
+}
