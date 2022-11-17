@@ -55,6 +55,7 @@ const (
 
 	//Misc operators
 	LT_LAMBDA
+	LT_SEMICOLON
 
 	LT_COMMA
 	LT_PERIOD
@@ -92,7 +93,8 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_ELSEIF: "LT_ELSEIF",
 
 	//Misc operators
-	LT_LAMBDA: "LT_LAMBDA",
+	LT_LAMBDA:    "LT_LAMBDA",
+	LT_SEMICOLON: "LT_SEMICOLON",
 
 	LT_COMMA:  "LT_COMMA",
 	LT_PERIOD: "LT_PERIOD",
@@ -259,6 +261,8 @@ func other(lexer *Lexer) Lexeme {
 		lexeme.Type = LT_COMMA
 	case '.':
 		lexeme.Type = LT_PERIOD
+	case ';':
+		lexeme.Type = LT_SEMICOLON
 	}
 
 	step(lexer)
