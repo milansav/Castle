@@ -43,3 +43,24 @@ func TestLexerExpression(t *testing.T) {
 		}
 	}
 }
+
+func TestLexerBigNumbers(t *testing.T) {
+	input := "1,200,300,400"
+
+	lexer := Create(input)
+
+	Start(&lexer)
+
+	if len(lexer.Lexemes) != 1 {
+		t.Errorf("lexer.Start Lexemes size is incorrect. Expected 5 got %d", len(lexer.Lexemes))
+		t.Failed()
+		return
+	}
+
+	if lexer.Lexemes[0].Label != input {
+		t.Errorf("lexer.Start Lexeme label is incorrect %s", lexer.Lexemes[0].Label)
+		t.Failed()
+		return
+	}
+
+}
