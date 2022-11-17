@@ -227,7 +227,9 @@ func number(lexer *Lexer) Lexeme {
 func other(lexer *Lexer) Lexeme {
 	target := currentRune(lexer)
 
-	lexeme := Lexeme{Label: string(target), Type: LT_NONE}
+	lexeme := Lexeme{Type: LT_NONE}
+
+	start := lexer.currentStep
 
 	switch target {
 	case '=':
@@ -266,6 +268,9 @@ func other(lexer *Lexer) Lexeme {
 	}
 
 	step(lexer)
+
+	end := lexer.currentStep
+	lexeme.Label = lexer.source[start:end]
 
 	return lexeme
 }
