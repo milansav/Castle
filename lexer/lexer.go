@@ -40,6 +40,8 @@ const (
 	LT_RPAREN
 	LT_LCURLY
 	LT_RCURLY
+	LT_LCHEVRON
+	LT_RCHEVRON
 
 	//Binary operations
 	LT_BANG
@@ -52,10 +54,14 @@ const (
 	LT_IF
 	LT_ELSE
 	LT_ELSEIF
+	LT_INTERFACE
+	LT_STRUCT
+	LT_OF
 
 	//Misc operators
 	LT_LAMBDA
 	LT_SEMICOLON
+	LT_COLON
 
 	LT_COMMA
 	LT_PERIOD
@@ -76,10 +82,12 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_EQUALS: "LT_EQUALS",
 
 	//Parentheses
-	LT_LPAREN: "LT_LPAREN",
-	LT_RPAREN: "LT_RPAREN",
-	LT_LCURLY: "LT_LCURLY",
-	LT_RCURLY: "LT_RCURLY",
+	LT_LPAREN:   "LT_LPAREN",
+	LT_RPAREN:   "LT_RPAREN",
+	LT_LCURLY:   "LT_LCURLY",
+	LT_RCURLY:   "LT_RCURLY",
+	LT_LCHEVRON: "LT_LCHEVRON",
+	LT_RCHEVRON: "LT_RCHEVRON",
 
 	LT_BANG: "LT_BANG",
 
@@ -87,14 +95,18 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_NUMBER:     "LT_NUMBER",
 
 	//Keywords
-	LT_CONST:  "LT_CONST",
-	LT_IF:     "LT_IF",
-	LT_ELSE:   "LT_ELSE",
-	LT_ELSEIF: "LT_ELSEIF",
+	LT_CONST:     "LT_CONST",
+	LT_IF:        "LT_IF",
+	LT_ELSE:      "LT_ELSE",
+	LT_ELSEIF:    "LT_ELSEIF",
+	LT_INTERFACE: "LT_INTERFACE",
+	LT_STRUCT:    "LT_STRUCT",
+	LT_OF:        "LT_OF",
 
 	//Misc operators
 	LT_LAMBDA:    "LT_LAMBDA",
 	LT_SEMICOLON: "LT_SEMICOLON",
+	LT_COLON:     "LT_COLON",
 
 	LT_COMMA:  "LT_COMMA",
 	LT_PERIOD: "LT_PERIOD",
@@ -104,10 +116,13 @@ var LexemeTypeLabels = map[LexemeType]string{
 }
 
 var keywords = map[string]LexemeType{
-	"const":  LT_CONST,
-	"if":     LT_IF,
-	"else":   LT_ELSE,
-	"elseif": LT_ELSEIF,
+	"const":     LT_CONST,
+	"if":        LT_IF,
+	"else":      LT_ELSE,
+	"elseif":    LT_ELSEIF,
+	"interface": LT_INTERFACE,
+	"struct":    LT_STRUCT,
+	"of":        LT_OF,
 }
 
 func Create(source string) Lexer {
@@ -259,12 +274,18 @@ func other(lexer *Lexer) Lexeme {
 		lexeme.Type = LT_LCURLY
 	case '}':
 		lexeme.Type = LT_RCURLY
+	case '<':
+		lexeme.Type = LT_LCHEVRON
+	case '>':
+		lexeme.Type = LT_RCHEVRON
 	case ',':
 		lexeme.Type = LT_COMMA
 	case '.':
 		lexeme.Type = LT_PERIOD
 	case ';':
 		lexeme.Type = LT_SEMICOLON
+	case ':':
+		lexeme.Type = LT_COLON
 	}
 
 	step(lexer)

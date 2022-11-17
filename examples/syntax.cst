@@ -1,8 +1,32 @@
 //function with one statement
-const MyFunction = (a) => a;
+const myFunction = (a) => a;
 
 //function with more statements
-const MyFunction = (a, b) => {
+const myFunction = (a, b) => {
     const c = a + b;
     c;
+}
+
+const a: int = 0;
+
+struct Bob {
+    height: int;
+}
+
+interface Carl of Bob {
+    speak = () => {
+
+    };
+
+    breathe = () => {
+
+    };
+}
+
+if 3 > 2 {
+
+} else if 2 < 3 {
+
+} else {
+
 }
