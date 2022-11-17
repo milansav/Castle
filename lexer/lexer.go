@@ -42,6 +42,8 @@ const (
 	LT_RCURLY
 	LT_LCHEVRON
 	LT_RCHEVRON
+	LT_LBRACKET
+	LT_RBRACKET
 
 	//Binary operations
 	LT_BANG
@@ -90,6 +92,8 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_RCURLY:   "LT_RCURLY",
 	LT_LCHEVRON: "LT_LCHEVRON",
 	LT_RCHEVRON: "LT_RCHEVRON",
+	LT_LBRACKET: "LT_LBRACKET",
+	LT_RBRACKET: "LT_RBRACKET",
 
 	LT_BANG: "LT_BANG",
 
@@ -282,6 +286,10 @@ func other(lexer *Lexer) Lexeme {
 		lexeme.Type = LT_LCHEVRON
 	case '>':
 		lexeme.Type = LT_RCHEVRON
+	case '[':
+		lexeme.Type = LT_LBRACKET
+	case ']':
+		lexeme.Type = LT_RBRACKET
 	case ',':
 		lexeme.Type = LT_COMMA
 	case '.':
