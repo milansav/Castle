@@ -62,11 +62,13 @@ const (
 	LT_LAMBDA
 	LT_SEMICOLON
 	LT_COLON
+	LT_MACRO
 
 	LT_COMMA
 	LT_PERIOD
 
 	LT_NONE
+	LT_UNKNOWN
 	LT_END
 )
 
@@ -107,12 +109,14 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_LAMBDA:    "LT_LAMBDA",
 	LT_SEMICOLON: "LT_SEMICOLON",
 	LT_COLON:     "LT_COLON",
+	LT_MACRO:     "LT_MACRO",
 
 	LT_COMMA:  "LT_COMMA",
 	LT_PERIOD: "LT_PERIOD",
 
-	LT_NONE: "LT_NONE",
-	LT_END:  "LT_END",
+	LT_NONE:    "LT_NONE",
+	LT_UNKNOWN: "LT_UNKNOWN",
+	LT_END:     "LT_END",
 }
 
 var keywords = map[string]LexemeType{
@@ -286,6 +290,14 @@ func other(lexer *Lexer) Lexeme {
 		lexeme.Type = LT_SEMICOLON
 	case ':':
 		lexeme.Type = LT_COLON
+	case '$':
+		if nextRune(lexer) == '$' {
+			lexeme.Type = LT_MACRO
+			step(lexer)
+			break
+		}
+
+		lexeme.Type = LT_UNKNOWN
 	}
 
 	step(lexer)

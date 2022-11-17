@@ -30,3 +30,8 @@ if 3 > 2 {
 } else {
 
 }
+
+// $$ indicates macro
+const $$main = (argc int, argv string[]) => {
+
+};
