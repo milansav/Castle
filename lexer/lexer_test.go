@@ -24,13 +24,13 @@ func TestLexerCreate(t *testing.T) {
 
 func TestLexerExpression(t *testing.T) {
 	input := "1 + 2 * 3 / (145 - 23)"
-	expectedTypes := [11]LexemeType{LT_NUMBER, LT_PLUS, LT_NUMBER, LT_MULTIPLY, LT_NUMBER, LT_DIVIDE, LT_LPAREN, LT_NUMBER, LT_MINUS, LT_NUMBER, LT_RPAREN}
+	expectedTypes := [12]LexemeType{LT_NUMBER, LT_PLUS, LT_NUMBER, LT_MULTIPLY, LT_NUMBER, LT_DIVIDE, LT_LPAREN, LT_NUMBER, LT_MINUS, LT_NUMBER, LT_RPAREN, LT_END}
 	lexer := Create(input)
 
 	Start(&lexer)
 
-	if len(lexer.Lexemes) != 11 {
-		t.Errorf("lexer.Start Lexemes size is incorrect. Expected 5 got %d", len(lexer.Lexemes))
+	if len(lexer.Lexemes) != 12 {
+		t.Errorf("lexer.Start Lexemes size is incorrect. Expected %d got %d", len(expectedTypes), len(lexer.Lexemes))
 		t.Failed()
 		return
 	}
@@ -51,8 +51,8 @@ func TestLexerBigNumbers(t *testing.T) {
 
 	Start(&lexer)
 
-	if len(lexer.Lexemes) != 1 {
-		t.Errorf("lexer.Start Lexemes size is incorrect. Expected 5 got %d", len(lexer.Lexemes))
+	if len(lexer.Lexemes) != 2 {
+		t.Errorf("lexer.Start Lexemes size is incorrect. Expected 2 got %d", len(lexer.Lexemes))
 		t.Failed()
 		return
 	}
