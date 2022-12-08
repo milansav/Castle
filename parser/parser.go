@@ -7,11 +7,57 @@ import (
 )
 
 type Parser struct {
-	lexemes     []lexer.Lexeme
-	currentStep int
+	lexemes       []lexer.Lexeme
+	currentStep   int
+	currentSym    lexer.LexemeType
+	currentLexeme lexer.Lexeme
+}
+
+func hasNext(parser *Parser) bool {
+	return parser.lexemes[parser.currentStep].Type != lexer.LT_END
+}
+
+func next(parser *Parser) {
+	if hasNext(parser) {
+		parser.currentStep++
+		parser.currentSym = parser.lexemes[parser.currentStep].Type
+		parser.currentLexeme = parser.lexemes[parser.currentStep]
+	}
+}
+
+func curr(parser *Parser) lexer.Lexeme {
+	return parser.currentLexeme
+}
+
+func peek(parser *Parser) lexer.Lexeme {
+	if hasNext(parser) {
+		return parser.lexemes[parser.currentStep+1]
+	}
+
+	return lexer.Lexeme{Type: lexer.LT_NONE}
+}
+
+func accept(parser *Parser, symbol lexer.LexemeType) bool {
+	if parser.currentSym == symbol {
+		next(parser)
+		return true
+	}
+
+	return false
+}
+
+func expect(parser *Parser, symbol lexer.LexemeType) bool {
+	if accept(parser, symbol) {
+		return true
+	}
+
+	fmt.Errorf("Unexpected symbol: %s, expected: %s", lexer.LexemeTypeLabels[parser.currentSym], lexer.LexemeTypeLabels[symbol])
+
+	return false
 }
 
 type ExpressionType int
+type StatementType int
 
 const (
 	ET_BINARY ExpressionType = iota
@@ -19,6 +65,16 @@ const (
 	ET_LITERAL
 	ET_GROUP
 )
+
+const (
+	ET_STATEMENT StatementType = iota
+)
+
+type AST_Program struct {
+}
+
+type AST_Statement struct {
+}
 
 type AST_Expression struct {
 	eType    ExpressionType
@@ -155,12 +211,49 @@ func Start(parser *Parser) []*AST_Expression {
 			step(parser)
 		}*/
 
-		expr := expression(parser)
-		expressions = append(expressions, expr)
+		//expr := expression(parser)
+		//expressions = append(expressions, expr)
+
 		continue
 	}
 
 	return expressions
+}
+
+/*
+
+Language Gramamr
+
+program -> (statement) END
+
+statement -> (statement | expression)
+
+*/
+
+func program(parser *Parser) {
+	for canStep(parser) {
+
+		/*if currentLexeme(parser).Type == lexer.LT_NUMBER {
+			expr := expression(parser)
+			expressions = append(expressions, expr)
+			continue
+		} else {
+			step(parser)
+		}*/
+
+		//expr := expression(parser)
+		//expressions = append(expressions, expr)
+
+		continue
+	}
+}
+
+func statement(parser *Parser) {
+
+}
+
+func condition(parser *Parser) {
+
 }
 
 /*
@@ -184,7 +277,7 @@ func primary(parser *Parser) *AST_Expression {
 
 	c := currentLexeme(parser).Type
 
-	if c == lexer.LT_NUMBER {
+	if c == lexer.LT_NUMBER || c == lexer.LT_FLOAT {
 		rhs := currentLexeme(parser).Label
 		//fmt.Println(rhs)
 

@@ -50,6 +50,7 @@ const (
 
 	LT_IDENTIFIER
 	LT_NUMBER
+	LT_FLOAT
 
 	//Keywords
 	LT_CONST
@@ -99,6 +100,7 @@ var LexemeTypeLabels = map[LexemeType]string{
 
 	LT_IDENTIFIER: "LT_IDENTIFIER",
 	LT_NUMBER:     "LT_NUMBER",
+	LT_FLOAT:      "LT_FLOAT",
 
 	//Keywords
 	LT_CONST:     "LT_CONST",
@@ -177,6 +179,8 @@ func Start(lexer *Lexer) {
 		}
 
 	}
+
+	lexer.Lexemes = append(lexer.Lexemes, Lexeme{Type: LT_END})
 }
 
 func lineComment(lexer *Lexer) Lexeme {
@@ -227,22 +231,26 @@ func getKeyword(lexeme Lexeme) Lexeme {
 
 func number(lexer *Lexer) Lexeme {
 
+	isFloat := false
+
 	start := lexer.currentStep
+
+	numberType := LT_NUMBER
 
 	c := currentRune(lexer)
 
-	for unicode.IsDigit(c) || c == ',' {
+	for unicode.IsDigit(c) || c == ',' || (c == '.' && !isFloat) {
+		if c == '.' {
+			isFloat = true
+			numberType = LT_FLOAT
+		}
 		step(lexer)
 		c = currentRune(lexer)
 	}
 
 	end := lexer.currentStep
 
-	//length := end - start
-
-	//fmt.Printf("Lexeme processed: Label: \"%s\", Length: %d\n", lexer.source[start:end], length)
-
-	lexeme := Lexeme{Label: lexer.source[start:end], Type: LT_NUMBER}
+	lexeme := Lexeme{Label: lexer.source[start:end], Type: numberType}
 
 	return lexeme
 }
