@@ -8,8 +8,6 @@ import (
 type Lexer struct {
 	Lexemes     []Lexeme
 	source      string
-	currentRune rune
-	nextRune    rune
 	currentStep int
 	row         int
 	column      int
@@ -54,6 +52,7 @@ const (
 
 	//Keywords
 	LT_CONST
+	LT_VAL
 	LT_IF
 	LT_ELSE
 	LT_ELSEIF
@@ -104,6 +103,7 @@ var LexemeTypeLabels = map[LexemeType]string{
 
 	//Keywords
 	LT_CONST:     "LT_CONST",
+	LT_VAL:       "LT_VAL",
 	LT_IF:        "LT_IF",
 	LT_ELSE:      "LT_ELSE",
 	LT_ELSEIF:    "LT_ELSEIF",
@@ -127,6 +127,7 @@ var LexemeTypeLabels = map[LexemeType]string{
 
 var keywords = map[string]LexemeType{
 	"const":     LT_CONST,
+	"val":       LT_VAL,
 	"if":        LT_IF,
 	"else":      LT_ELSE,
 	"elseif":    LT_ELSEIF,
