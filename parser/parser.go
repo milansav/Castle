@@ -1,8 +1,10 @@
 package parser
 
 import (
+	"errors"
 	"fmt"
 	"github.com/milansav/Castle/lexer"
+	"github.com/milansav/Castle/util"
 	"log"
 )
 
@@ -38,8 +40,10 @@ func peek(parser *Parser) lexer.Lexeme {
 }
 
 func accept(parser *Parser, symbol lexer.LexemeType) bool {
+
 	if parser.currentSym == symbol {
 		next(parser)
+		fmt.Printf("Accepted symbol: %s\n", lexer.LexemeTypeLabels[parser.currentSym])
 		return true
 	}
 
@@ -51,7 +55,16 @@ func expect(parser *Parser, symbol lexer.LexemeType) bool {
 		return true
 	}
 
-	fmt.Errorf("Unexpected symbol: %s, expected: %s", lexer.LexemeTypeLabels[parser.currentSym], lexer.LexemeTypeLabels[symbol])
+	errorMessage := fmt.Sprintf(
+		"%sUnexpected symbol: %s, expected: %s%s\n",
+		util.Red,
+		lexer.LexemeTypeLabels[parser.currentSym],
+		lexer.LexemeTypeLabels[symbol],
+		util.Reset)
+
+	err := errors.New(errorMessage)
+
+	fmt.Println(err)
 
 	return false
 }
@@ -70,18 +83,19 @@ const (
 	ET_STATEMENT StatementType = iota
 )
 
-type AST_Program struct {
-}
-
-type AST_Statement struct {
-}
-
 type AST_Expression struct {
 	eType    ExpressionType
 	lhs      *AST_Expression
 	operator lexer.LexemeType
 	rhs      *AST_Expression
 	value    string
+}
+
+type AST_Statement struct {
+}
+
+type AST_Program struct {
+	Statements []*AST_Statement
 }
 
 func expressionLiteral(value string) *AST_Expression {
@@ -194,30 +208,37 @@ func PrintTree(tree *AST_Expression, depth int) {
 }
 
 func Create(lexer lexer.Lexer) Parser {
-	return Parser{lexemes: lexer.Lexemes}
+	return Parser{lexemes: lexer.Lexemes, currentLexeme: lexer.Lexemes[0], currentSym: lexer.Lexemes[0].Type}
 }
 
 func Start(parser *Parser) []*AST_Expression {
 
 	expressions := make([]*AST_Expression, 0)
 
-	for canStep(parser) {
+	for hasNext(parser) {
 
-		/*if currentLexeme(parser).Type == lexer.LT_NUMBER {
+		if currentLexeme(parser).Type == lexer.LT_NUMBER {
 			expr := expression(parser)
 			expressions = append(expressions, expr)
 			continue
 		} else {
 			step(parser)
-		}*/
+		}
 
-		//expr := expression(parser)
-		//expressions = append(expressions, expr)
+		expr := expression(parser)
+		expressions = append(expressions, expr)
 
 		continue
 	}
 
 	return expressions
+}
+
+func StartNew(parser *Parser) *AST_Program {
+
+	program := program(parser)
+
+	return program
 }
 
 /*
@@ -226,34 +247,47 @@ Language Gramamr
 
 program -> (statement) END
 
-statement -> (statement | expression)
+statement 	-> IF "(" expression ")" "{" statement "}"
+			-> WHILE "(" expression ")" "{" statement "}"
+			-> IMPORT STRING
+			-> LET IDENTIFIER ( ";" | "=" expression ";" )
 
 */
 
-func program(parser *Parser) {
-	for canStep(parser) {
+func program(parser *Parser) *AST_Program {
 
-		/*if currentLexeme(parser).Type == lexer.LT_NUMBER {
-			expr := expression(parser)
-			expressions = append(expressions, expr)
-			continue
-		} else {
-			step(parser)
-		}*/
+	program := &AST_Program{Statements: make([]*AST_Statement, 0)}
 
-		//expr := expression(parser)
-		//expressions = append(expressions, expr)
+	for hasNext(parser) {
+
+		//if accept(parser, lexer.LT_END) {
+		//	fmt.Println("Finished")
+		//}
+
+		fmt.Println(lexer.LexemeTypeLabels[parser.currentLexeme.Type])
+
+		sttmnt := statement(parser)
+
+		program.Statements = append(program.Statements, sttmnt)
 
 		continue
 	}
+
+	return program
 }
 
-func statement(parser *Parser) {
-
+func statement(parser *Parser) *AST_Statement {
+	if accept(parser, lexer.LT_VAL) {
+		if expect(parser, lexer.LT_IDENTIFIER) {
+			if expect(parser, lexer.LT_EQUALS) {
+				fmt.Println("Here")
+			}
+		}
+	}
+	return &AST_Statement{}
 }
 
 func condition(parser *Parser) {
-
 }
 
 /*

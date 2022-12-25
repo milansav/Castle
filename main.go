@@ -30,11 +30,11 @@ func main() {
 		}
 
 		mainParser := parser.Create(mainLexer)
-		result := parser.Start(&mainParser)
+		parser.StartNew(&mainParser)
 
 		//fmt.Println(string(contents))
-		for _, value := range result {
-			parser.PrintTree(value, 0)
-		}
+		//for _, value := range result {
+		//	parser.PrintTree(value, 0)
+		//}
 	}
 }
