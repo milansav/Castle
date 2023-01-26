@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/milansav/Castle/cli"
 	"github.com/milansav/Castle/lexer"
 	"github.com/milansav/Castle/parser"
-	"os"
 )
 
 func main() {

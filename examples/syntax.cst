@@ -1,6 +1,6 @@
 // $$ indicates macro
 const $$main = (argc int, argv string[]) => {
-
+    const c = "Hello World";
 };
 
 //function with one statement

@@ -60,6 +60,15 @@ func accept(parser *Parser, symbol lexer.LexemeType) bool {
 	return false
 }
 
+func is(parser *Parser, symbol lexer.LexemeType) bool {
+	if parser.currentSym == symbol {
+		fmt.Printf("Accepted symbol: %s\n", lexer.LexemeTypeLabels[parser.currentSym])
+		return true
+	}
+
+	return false
+}
+
 func expect(parser *Parser, symbol lexer.LexemeType) bool {
 
 	expectingMessage := fmt.Sprintf(
@@ -246,7 +255,7 @@ func StartExpressionParser(parser *Parser) []*AST_Expression {
 			expressions = append(expressions, expr)
 			continue
 		} else {
-			step(parser)
+			next(parser)
 		}
 
 		expr := expression(parser)
@@ -284,8 +293,8 @@ func program(parser *Parser) *AST_Program {
 
 	for hasNext(parser) {
 
-		//fmt.Print("Current token: ")
-		//fmt.Println(lexer.LexemeTypeLabels[parser.currentLexeme.Type])
+		// fmt.Print("Current token: ")
+		// fmt.Println(lexer.LexemeTypeLabels[parser.currentLexeme.Type])
 
 		sttmnt := statement(parser)
 
@@ -345,6 +354,17 @@ func statement(parser *Parser) *AST_Statement {
 
 					expect(parser, lexer.LT_SEMICOLON) // LET / CONST {name} = ((params)) => {statement};
 					return _statement
+				} else if is(parser, lexer.LT_NUMBER) {
+					expression(parser)
+					expect(parser, lexer.LT_SEMICOLON)
+
+				} else if is(parser, lexer.LT_FLOAT) {
+					expression(parser)
+					expect(parser, lexer.LT_SEMICOLON)
+
+				} else if accept(parser, lexer.LT_STRING) {
+					fmt.Println("Hello")
+					expect(parser, lexer.LT_SEMICOLON)
 				}
 			}
 		}
@@ -421,11 +441,12 @@ factor -> unary (( LT_DIVIDE | LT_MULTIPLY ) unary)*
 unary -> ( LT_BANG | LT_MINUS | LT_PLUS ) unary | primary
 */
 
-// TODO: Finish to satisfy grammar
 func primary(parser *Parser) *AST_Expression {
-	//fmt.Println("Primary")
+	// fmt.Println("Primary")
 
 	c := currentLexeme(parser).Type
+
+	fmt.Println(lexer.LexemeTypeLabels[c])
 
 	if c == lexer.LT_NUMBER || c == lexer.LT_FLOAT {
 		rhs := currentLexeme(parser).Label
@@ -434,7 +455,7 @@ func primary(parser *Parser) *AST_Expression {
 		expr := expressionLiteral(rhs)
 		return expr
 	} else if c == lexer.LT_LPAREN {
-		step(parser)
+		next(parser)
 		expr := expression(parser)
 
 		expr = expressionGroup(expr)
@@ -450,12 +471,12 @@ func primary(parser *Parser) *AST_Expression {
 
 func expression(parser *Parser) *AST_Expression {
 
-	//fmt.Println("Expression")
+	// fmt.Println("Expression")
 
 	lhs := term(parser)
 
 	condition := func() bool {
-		one := canStep(parser)
+		one := hasNext(parser)
 		if !one {
 			return false
 		}
@@ -467,8 +488,8 @@ func expression(parser *Parser) *AST_Expression {
 
 	for condition() {
 		operator := currentLexeme(parser).Type
-		//fmt.Println(operator)
-		step(parser)
+		// fmt.Println(operator)
+		next(parser)
 		rhs := factor(parser)
 		lhs = expressionBinary(lhs, operator, rhs)
 	}
@@ -478,12 +499,12 @@ func expression(parser *Parser) *AST_Expression {
 
 func term(parser *Parser) *AST_Expression {
 
-	//fmt.Println("Term")
+	// fmt.Println("Term")
 
 	lhs := factor(parser)
 
 	condition := func() bool {
-		one := canStep(parser)
+		one := hasNext(parser)
 		if !one {
 			return false
 		}
@@ -495,8 +516,8 @@ func term(parser *Parser) *AST_Expression {
 
 	for condition() {
 		operator := currentLexeme(parser).Type
-		//fmt.Println(operator)
-		step(parser)
+		// fmt.Println(operator)
+		next(parser)
 		rhs := factor(parser)
 		lhs = expressionBinary(lhs, operator, rhs)
 	}
@@ -506,12 +527,12 @@ func term(parser *Parser) *AST_Expression {
 
 func factor(parser *Parser) *AST_Expression {
 
-	//fmt.Println("Factor")
+	// fmt.Println("Factor")
 
 	lhs := unary(parser)
 
-	condition := func() bool {
-		one := canStep(parser)
+	isCondition := func() bool {
+		one := hasNext(parser)
 		if !one {
 			return false
 		}
@@ -521,10 +542,10 @@ func factor(parser *Parser) *AST_Expression {
 		return (two || three)
 	}
 
-	for condition() {
+	for isCondition() {
 		operator := currentLexeme(parser).Type
 		//fmt.Println(operator)
-		step(parser)
+		next(parser)
 		rhs := unary(parser)
 		lhs = expressionBinary(lhs, operator, rhs)
 	}
@@ -534,30 +555,19 @@ func factor(parser *Parser) *AST_Expression {
 
 func unary(parser *Parser) *AST_Expression {
 
-	//fmt.Println("Unary")
+	// fmt.Println("Unary")
 
 	if currentLexeme(parser).Type == lexer.LT_BANG || currentLexeme(parser).Type == lexer.LT_MINUS {
 		operator := currentLexeme(parser).Type
 		//fmt.Println(operator)
-		step(parser)
+		next(parser)
 		rhs := unary(parser)
 		return expressionUnary(operator, rhs)
 	}
 
 	rhs := primary(parser)
-	step(parser)
+	next(parser)
 	return rhs
-}
-
-func canStep(parser *Parser) bool {
-	c := parser.currentStep < len(parser.lexemes)
-	/*fmt.Printf("Can step: ")
-	fmt.Println(c)*/
-	return c
-}
-
-func step(parser *Parser) {
-	parser.currentStep += 1
 }
 
 func currentLexeme(parser *Parser) lexer.Lexeme {
@@ -566,8 +576,4 @@ func currentLexeme(parser *Parser) lexer.Lexeme {
 	//fmt.Printf("Current Lexeme: %s\n", currLexeme.Label)
 
 	return currLexeme
-}
-
-func nextLexeme(parser *Parser) lexer.Lexeme {
-	return parser.lexemes[parser.currentStep+1]
 }

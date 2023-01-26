@@ -352,6 +352,22 @@ func other(lexer *Lexer) Lexeme {
 		}
 
 		lexeme.Type = LT_UNKNOWN
+	case '"':
+		lexeme.Type = LT_STRING
+
+		start := lexer.currentStep
+		step(lexer)
+		for {
+			if nextRune(lexer) == '"' {
+				step(lexer)
+				break
+			}
+			step(lexer)
+		}
+
+		end := lexer.currentStep
+
+		lexeme.Label = lexer.source[start:end]
 	}
 
 	step(lexer)
