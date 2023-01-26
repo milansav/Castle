@@ -3,9 +3,10 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/milansav/Castle/lexer"
 	"github.com/milansav/Castle/util"
-	"log"
 )
 
 type Parser struct {
@@ -31,6 +32,15 @@ func curr(parser *Parser) lexer.Lexeme {
 	return parser.currentLexeme
 }
 
+func prev(parser *Parser) lexer.Lexeme {
+	if parser.currentStep-1 > 0 {
+		return parser.lexemes[parser.currentStep-1]
+	}
+
+	return lexer.Lexeme{Type: lexer.LT_NONE}
+
+}
+
 func peek(parser *Parser) lexer.Lexeme {
 	if hasNext(parser) {
 		return parser.lexemes[parser.currentStep+1]
@@ -51,6 +61,15 @@ func accept(parser *Parser, symbol lexer.LexemeType) bool {
 }
 
 func expect(parser *Parser, symbol lexer.LexemeType) bool {
+
+	expectingMessage := fmt.Sprintf(
+		"%sExpecting symbol: %s%s\n",
+		util.Green,
+		lexer.LexemeTypeLabels[symbol],
+		util.Reset)
+
+	fmt.Println(expectingMessage)
+
 	if accept(parser, symbol) {
 		return true
 	}
@@ -92,6 +111,7 @@ type AST_Expression struct {
 }
 
 type AST_Statement struct {
+	Statements []*AST_Statement
 }
 
 type AST_Program struct {
@@ -171,38 +191,42 @@ func PrintTree(tree *AST_Expression, depth int) {
 	prefixChar := "≫ "
 	prefix := ""
 
+	log := func(_prefix string, field string) {
+		fmt.Printf("%s%s[ %s ]%s\n", _prefix, util.Yellow, field, util.Reset)
+	}
+
 	for i := 0; i < depth; i++ {
 		prefix += prefixChar
 	}
 
 	if tree.eType == ET_GROUP {
-		fmt.Println(prefix + "[ GROUP ]")
+		log(prefix, "GROUP")
 
-		//fmt.Println(prefix + prefixChar + "[ LHS ]")
+		//log(prefix, "LHS")
 
 		PrintTree(tree.lhs, depth+1)
 	} else if tree.eType == ET_BINARY {
 
 		switch tree.operator {
 		case lexer.LT_PLUS:
-			fmt.Println(prefix + "[ ADD ]")
+			log(prefix, "ADD")
 		case lexer.LT_MINUS:
-			fmt.Println(prefix + "[ SUBTRACT ]")
+			log(prefix, "SUBTRACT")
 		case lexer.LT_MULTIPLY:
-			fmt.Println(prefix + "[ MULTIPLY ]")
+			log(prefix, "MULTIPLY")
 		case lexer.LT_DIVIDE:
-			fmt.Println(prefix + "[ DIVIDE ]")
+			log(prefix, "DIVIDE")
 		}
 
-		//fmt.Println(prefix + prefixChar + "[ LHS ]")
+		//log(prefix, "LHS")
 
 		PrintTree(tree.lhs, depth+1)
 
-		//fmt.Println(prefix + prefixChar + "[ RHS ]")
+		//log(prefix, "RHS")
 
 		PrintTree(tree.rhs, depth+1)
 	} else if tree.eType == ET_LITERAL {
-		fmt.Println(prefix + "[ VALUE ]")
+		log(prefix, "VALUE")
 		fmt.Println(prefix + prefixChar + tree.value)
 	}
 }
@@ -211,7 +235,7 @@ func Create(lexer lexer.Lexer) Parser {
 	return Parser{lexemes: lexer.Lexemes, currentLexeme: lexer.Lexemes[0], currentSym: lexer.Lexemes[0].Type}
 }
 
-func Start(parser *Parser) []*AST_Expression {
+func StartExpressionParser(parser *Parser) []*AST_Expression {
 
 	expressions := make([]*AST_Expression, 0)
 
@@ -260,11 +284,8 @@ func program(parser *Parser) *AST_Program {
 
 	for hasNext(parser) {
 
-		//if accept(parser, lexer.LT_END) {
-		//	fmt.Println("Finished")
-		//}
-
-		fmt.Println(lexer.LexemeTypeLabels[parser.currentLexeme.Type])
+		//fmt.Print("Current token: ")
+		//fmt.Println(lexer.LexemeTypeLabels[parser.currentLexeme.Type])
 
 		sttmnt := statement(parser)
 
@@ -273,21 +294,116 @@ func program(parser *Parser) *AST_Program {
 		continue
 	}
 
+	if accept(parser, lexer.LT_END) {
+		fmt.Println("Finished")
+	}
+
 	return program
 }
 
 func statement(parser *Parser) *AST_Statement {
-	if accept(parser, lexer.LT_VAL) {
-		if expect(parser, lexer.LT_IDENTIFIER) {
-			if expect(parser, lexer.LT_EQUALS) {
-				fmt.Println("Here")
+
+	_statement := &AST_Statement{Statements: make([]*AST_Statement, 0)}
+
+	if accept(parser, lexer.LT_VAL) || accept(parser, lexer.LT_CONST) { // LET / CONST
+
+		// variableType := prev(parser)
+
+		// Declare variable type here to be used later
+		if expect(parser, lexer.LT_IDENTIFIER) { // LET / CONST {name}
+
+			// identifier := prev(parser)
+
+			if expect(parser, lexer.LT_EQUALS) { // LET / CONST {name} =
+				if accept(parser, lexer.LT_LPAREN) { // LET / CONST {name} = (
+					// Parse function
+					for { // n1, n2, .. nx )
+						if accept(parser, lexer.LT_IDENTIFIER) {
+
+							if accept(parser, lexer.LT_RPAREN) {
+								break
+							} else {
+								expect(parser, lexer.LT_COMMA)
+							}
+						}
+					}
+
+					expect(parser, lexer.LT_LAMBDA) // LET / CONST {name} = ((params)) =>
+
+					if accept(parser, lexer.LT_LCURLY) { // LET / CONST {name} = ((params)) => { (statement) }
+						for {
+							if accept(parser, lexer.LT_RCURLY) {
+								break
+							}
+
+							_statement.Statements = append(_statement.Statements, statement(parser))
+
+						}
+					} else {
+						_statement.Statements = append(_statement.Statements, statement(parser)) // LET / CONST {name} = ((params)) => {statement}
+					}
+
+					expect(parser, lexer.LT_SEMICOLON) // LET / CONST {name} = ((params)) => {statement};
+					return _statement
+				}
+			}
+		}
+	} else if accept(parser, lexer.LT_IF) { // IF
+		expect(parser, lexer.LT_LPAREN)
+
+		condition(parser)
+
+		expect(parser, lexer.LT_RPAREN)
+
+		if accept(parser, lexer.LT_LCURLY) {
+			for {
+				if accept(parser, lexer.LT_RCURLY) {
+					break
+				}
+
+				_statement.Statements = append(_statement.Statements, statement(parser))
 			}
 		}
 	}
 	return &AST_Statement{}
 }
 
+// logicop -> LT_AND | LT_OR | LT_NOR | LT_NAND | LT_XOR | LT_XAND | LT_XNOR | LT_XNAND | LT_
+// condition -> expression (logicop expression)*
 func condition(parser *Parser) {
+	expression(parser)
+
+	isLogicop := func(c lexer.LexemeType) bool {
+		switch c {
+		case lexer.LT_AND:
+			fallthrough
+		case lexer.LT_OR:
+			fallthrough
+		case lexer.LT_NAND:
+			fallthrough
+		case lexer.LT_NOR:
+			fallthrough
+		case lexer.LT_XAND:
+			fallthrough
+		case lexer.LT_XOR:
+			fallthrough
+		case lexer.LT_XNAND:
+			fallthrough
+		case lexer.LT_XNOR:
+			return true
+
+		default:
+			return false
+		}
+	}
+
+	for {
+		if !isLogicop(curr(parser).Type) {
+			break
+		}
+
+		expression(parser)
+	}
 }
 
 /*

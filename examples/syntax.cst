@@ -1,5 +1,12 @@
+// $$ indicates macro
+const $$main = (argc int, argv string[]) => {
+
+};
+
 //function with one statement
-const myFunction = (a) => a;
+const myFunction = (a) => {
+    
+};
 
 //function with more statements
 const myFunction = (a, b) => {
@@ -30,8 +37,3 @@ if 3 > 2 {
 } else {
 
 }
-
-// $$ indicates macro
-const $$main = (argc int, argv string[]) => {
-
-};

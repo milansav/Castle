@@ -33,6 +33,17 @@ const (
 
 	LT_EQUALS
 
+	//Logical
+	LT_COMPARE
+	LT_AND
+	LT_OR
+	LT_NAND
+	LT_NOR
+	LT_XOR
+	LT_XAND
+	LT_XNOR
+	LT_XNAND
+
 	//Parentheses
 	LT_LPAREN
 	LT_RPAREN
@@ -47,8 +58,11 @@ const (
 	LT_BANG
 
 	LT_IDENTIFIER
+
+	// Literals
 	LT_NUMBER
 	LT_FLOAT
+	LT_STRING
 
 	//Keywords
 	LT_CONST
@@ -85,6 +99,17 @@ var LexemeTypeLabels = map[LexemeType]string{
 
 	LT_EQUALS: "LT_EQUALS",
 
+	//Logical
+	LT_COMPARE: "LT_COMPARE",
+	LT_AND:     "LT_AND",
+	LT_OR:      "LT_OR",
+	LT_NAND:    "LT_NAND",
+	LT_NOR:     "LT_NOR",
+	LT_XOR:     "LT_XOR",
+	LT_XAND:    "LT_XAND",
+	LT_XNOR:    "LT_XNOR",
+	LT_XNAND:   "LT_XNAND",
+
 	//Parentheses
 	LT_LPAREN:   "LT_LPAREN",
 	LT_RPAREN:   "LT_RPAREN",
@@ -98,8 +123,11 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_BANG: "LT_BANG",
 
 	LT_IDENTIFIER: "LT_IDENTIFIER",
-	LT_NUMBER:     "LT_NUMBER",
-	LT_FLOAT:      "LT_FLOAT",
+
+	// Literals
+	LT_NUMBER: "LT_NUMBER",
+	LT_FLOAT:  "LT_FLOAT",
+	LT_STRING: "LT_STRING",
 
 	//Keywords
 	LT_CONST:     "LT_CONST",
@@ -134,6 +162,15 @@ var keywords = map[string]LexemeType{
 	"interface": LT_INTERFACE,
 	"struct":    LT_STRUCT,
 	"of":        LT_OF,
+
+	"and":   LT_AND,
+	"or":    LT_OR,
+	"nand":  LT_NAND,
+	"nor":   LT_NOR,
+	"xor":   LT_XOR,
+	"xand":  LT_XAND,
+	"xnor":  LT_XNOR,
+	"xnand": LT_XNAND,
 }
 
 func Create(source string) Lexer {

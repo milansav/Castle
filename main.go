@@ -32,6 +32,9 @@ func main() {
 		mainParser := parser.Create(mainLexer)
 		parser.StartNew(&mainParser)
 
+		//expressionParser := parser.Create(mainLexer)
+		//result := parser.StartExpressionParser(&expressionParser)
+
 		//fmt.Println(string(contents))
 		//for _, value := range result {
 		//	parser.PrintTree(value, 0)
