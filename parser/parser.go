@@ -523,51 +523,6 @@ unary -> ( LT_BANG | LT_MINUS | LT_PLUS ) unary | primary
 primary -> LT_NUMBER | LT_FLOAT | LT_LPAREN expression LT_RPAREN | LT_IDENTIFIER | "function call"
 */
 
-func primary(parser *Parser) *AST_Expression {
-	// fmt.Println("Primary")
-
-	c := currentLexeme(parser).Type
-
-	fmt.Println(lexer.LexemeTypeLabels[c])
-
-	if c == lexer.LT_LITERAL_NUMBER || c == lexer.LT_LITERAL_FLOAT || c == lexer.LT_LITERAL_STRING || c == lexer.LT_LITERAL_BOOL {
-		rhs := currentLexeme(parser).Label
-		//fmt.Println(rhs)
-
-		expr := expressionLiteral(rhs)
-		return expr
-	} else if c == lexer.LT_IDENTIFIER {
-		name := currentLexeme(parser).Label
-
-		if accept(parser, lexer.LT_LPAREN) {
-			for {
-				if accept(parser, lexer.LT_RPAREN) {
-					break
-				}
-				expect(parser, lexer.LT_IDENTIFIER)
-				accept(parser, lexer.LT_COMMA)
-			}
-
-			// TODO return function call expression here
-		}
-
-		expr := expressionLiteral(name)
-		return expr
-	} else if c == lexer.LT_LPAREN {
-		next(parser)
-		expr := expression(parser)
-
-		expr = expressionGroup(expr)
-
-		//TODO: Check if current symbol is )
-		//fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
-		return expr
-	} else {
-		log.Panic("Unexpected path")
-		return nil
-	}
-}
-
 func expression(parser *Parser) *AST_Expression {
 
 	// fmt.Println("Expression")
@@ -688,6 +643,51 @@ func unary(parser *Parser) *AST_Expression {
 	rhs := primary(parser)
 	next(parser)
 	return rhs
+}
+
+func primary(parser *Parser) *AST_Expression {
+	// fmt.Println("Primary")
+
+	c := currentLexeme(parser).Type
+
+	fmt.Println(lexer.LexemeTypeLabels[c])
+
+	if c == lexer.LT_LITERAL_NUMBER || c == lexer.LT_LITERAL_FLOAT || c == lexer.LT_LITERAL_STRING || c == lexer.LT_LITERAL_BOOL {
+		rhs := currentLexeme(parser).Label
+		//fmt.Println(rhs)
+
+		expr := expressionLiteral(rhs)
+		return expr
+	} else if c == lexer.LT_IDENTIFIER {
+		name := currentLexeme(parser).Label
+
+		if accept(parser, lexer.LT_LPAREN) {
+			for {
+				if accept(parser, lexer.LT_RPAREN) {
+					break
+				}
+				expect(parser, lexer.LT_IDENTIFIER)
+				accept(parser, lexer.LT_COMMA)
+			}
+
+			// TODO return function call expression here
+		}
+
+		expr := expressionLiteral(name)
+		return expr
+	} else if c == lexer.LT_LPAREN {
+		next(parser)
+		expr := expression(parser)
+
+		expr = expressionGroup(expr)
+
+		//TODO: Check if current symbol is )
+		//fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
+		return expr
+	} else {
+		log.Panic("Unexpected path")
+		return nil
+	}
 }
 
 func currentLexeme(parser *Parser) lexer.Lexeme {
