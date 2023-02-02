@@ -125,8 +125,8 @@ type AST_Expression struct {
 }
 
 type AST_Function struct {
-	name      string
-	props     []string
+	Name      string
+	Props     []string
 	Statement *AST_Statement
 }
 
@@ -136,7 +136,7 @@ type AST_Declaration struct {
 }
 
 type AST_Statement struct {
-	sType       StatementType
+	SType       StatementType
 	Statements  []*AST_Statement
 	Statement   *AST_Statement
 	Expression  *AST_Expression
@@ -150,8 +150,8 @@ type AST_Program struct {
 
 func createFunctionNode(name string, props []string, statement *AST_Statement) *AST_Function {
 	fn := &AST_Function{
-		name:      name,
-		props:     props,
+		Name:      name,
+		Props:     props,
 		Statement: statement,
 	}
 
@@ -383,9 +383,9 @@ func statement(parser *Parser) *AST_Statement {
 
 					expect(parser, lexer.LT_LAMBDA) // LET / CONST {name} = ((params)) =>
 
-					currentStatement.sType = ST_FUNCTION
+					currentStatement.SType = ST_FUNCTION
 
-					functionStatements := &AST_Statement{sType: ST_STATEMENT_ARRAY, Statements: make([]*AST_Statement, 0)}
+					functionStatements := &AST_Statement{SType: ST_STATEMENT_ARRAY, Statements: make([]*AST_Statement, 0)}
 
 					if accept(parser, lexer.LT_LCURLY) { // LET / CONST {name} = ((params)) => { (statement) }
 
@@ -399,11 +399,11 @@ func statement(parser *Parser) *AST_Statement {
 						}
 
 					} else {
-						functionStatements.sType = ST_STATEMENT
+						functionStatements.SType = ST_STATEMENT
 						functionStatements.Statement = statement(parser) // LET / CONST {name} = ((params)) => {statement}
 					}
 
-					createFunctionNode(identifier.Label, params, functionStatements)
+					currentStatement.Function = createFunctionNode(identifier.Label, params, functionStatements)
 					expect(parser, lexer.LT_SEMICOLON) // LET / CONST {name} = ((params)) => {statement};
 
 					return currentStatement
