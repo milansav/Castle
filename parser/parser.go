@@ -385,9 +385,12 @@ func statement(parser *Parser) *AST_Statement {
 
 					currentStatement.SType = ST_FUNCTION
 
-					functionStatements := &AST_Statement{SType: ST_STATEMENT_ARRAY, Statements: make([]*AST_Statement, 0)}
+					functionStatements := &AST_Statement{}
 
 					if accept(parser, lexer.LT_LCURLY) { // LET / CONST {name} = ((params)) => { (statement) }
+
+						functionStatements.SType = ST_STATEMENT_ARRAY
+						functionStatements.Statements = make([]*AST_Statement, 0)
 
 						for {
 							if accept(parser, lexer.LT_RCURLY) {
@@ -407,7 +410,7 @@ func statement(parser *Parser) *AST_Statement {
 					expect(parser, lexer.LT_SEMICOLON) // LET / CONST {name} = ((params)) => {statement};
 
 					return currentStatement
-				} else if accept(parser, lexer.LT_STRING) {
+				} else if accept(parser, lexer.LT_STRING) { // TODO move into expressions? 🤔
 					fmt.Println("Hello")
 					expect(parser, lexer.LT_SEMICOLON)
 				} else {
