@@ -131,8 +131,8 @@ type AST_Function struct {
 }
 
 type AST_Declaration struct {
-	name  string
-	value *AST_Expression
+	Name  string
+	Value *AST_Expression
 }
 
 type AST_Statement struct {
@@ -146,6 +146,15 @@ type AST_Statement struct {
 
 type AST_Program struct {
 	Statements []*AST_Statement
+}
+
+func createDeclarationNode(name string, value *AST_Expression) *AST_Declaration {
+	decl := &AST_Declaration{
+		Name:  name,
+		Value: value,
+	}
+
+	return decl
 }
 
 func createFunctionNode(name string, props []string, statement *AST_Statement) *AST_Function {
@@ -328,7 +337,7 @@ statement 	-> IF "(" expression ")" "{" statement "}"
 
 func program(parser *Parser) *AST_Program {
 
-	program := &AST_Program{Statements: make([]*AST_Statement, 0)}
+	program := createProgramNode()
 
 	for hasNext(parser) {
 
@@ -414,8 +423,15 @@ func statement(parser *Parser) *AST_Statement {
 					fmt.Println("Hello")
 					expect(parser, lexer.LT_SEMICOLON)
 				} else {
-					expression(parser)
+					expr := expression(parser)
+
+					decl := createDeclarationNode(identifier.Label, expr)
+
+					currentStatement.SType = ST_DECLARATION
+					currentStatement.Declaration = decl
+
 					expect(parser, lexer.LT_SEMICOLON)
+					return currentStatement
 				}
 			}
 		}
@@ -483,7 +499,6 @@ Expression Grammar
 
 expression -> term
 
-//                                                                                 TODO 👇
 primary -> LT_NUMBER | LT_FLOAT | LT_LPAREN expression LT_RPAREN | LT_IDENTIFIER | "function call"
 
 term -> factor (( LT_PLUS | LT_MINUS ) factor)*
@@ -517,6 +532,8 @@ func primary(parser *Parser) *AST_Expression {
 				expect(parser, lexer.LT_IDENTIFIER)
 				accept(parser, lexer.LT_COMMA)
 			}
+
+			// TODO return function call expression here
 		}
 
 		expr := expressionLiteral(name)

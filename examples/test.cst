@@ -2,3 +2,6 @@
 const myFunction = (a, b) => {
     const c = 3;
 };
+const myFunction = (a, b) => {
+    const c = 3;
+};

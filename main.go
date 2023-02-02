@@ -36,6 +36,7 @@ func main() {
 		fmt.Println(len(program.Statements))
 		fmt.Println(program.Statements[0].SType)
 		fmt.Println(program.Statements[0].Function.Name)
+		fmt.Println(program.Statements[0].Function.Statement.Statements[0].Declaration.Value)
 
 		//expressionParser := parser.Create(mainLexer)
 		//result := parser.StartExpressionParser(&expressionParser)
