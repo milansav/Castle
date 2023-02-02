@@ -108,7 +108,12 @@ const (
 )
 
 const (
-	ET_STATEMENT StatementType = iota
+	ST_STATEMENT_ARRAY StatementType = iota
+	ST_STATEMENT
+	ST_EXPRESSION
+	ST_FUNCTION
+	ST_DECLARATION
+	ST_STRUCT
 )
 
 type AST_Expression struct {
@@ -119,12 +124,46 @@ type AST_Expression struct {
 	value    string
 }
 
+type AST_Function struct {
+	name      string
+	props     []string
+	Statement *AST_Statement
+}
+
+type AST_Declaration struct {
+	name  string
+	value *AST_Expression
+}
+
 type AST_Statement struct {
-	Statements []*AST_Statement
+	sType       StatementType
+	Statements  []*AST_Statement
+	Statement   *AST_Statement
+	Expression  *AST_Expression
+	Function    *AST_Function
+	Declaration *AST_Declaration
 }
 
 type AST_Program struct {
 	Statements []*AST_Statement
+}
+
+func createFunctionNode(name string, props []string, statement *AST_Statement) *AST_Function {
+	fn := &AST_Function{
+		name:      name,
+		props:     props,
+		Statement: statement,
+	}
+
+	return fn
+}
+
+func createProgramNode() *AST_Program {
+	prog := &AST_Program{
+		Statements: make([]*AST_Statement, 0),
+	}
+
+	return prog
 }
 
 func expressionLiteral(value string) *AST_Expression {
@@ -312,7 +351,7 @@ func program(parser *Parser) *AST_Program {
 
 func statement(parser *Parser) *AST_Statement {
 
-	_statement := &AST_Statement{Statements: make([]*AST_Statement, 0)}
+	currentStatement := &AST_Statement{}
 
 	if accept(parser, lexer.LT_VAL) || accept(parser, lexer.LT_CONST) { // LET / CONST
 
@@ -321,13 +360,18 @@ func statement(parser *Parser) *AST_Statement {
 		// Declare variable type here to be used later
 		if expect(parser, lexer.LT_IDENTIFIER) { // LET / CONST {name}
 
-			// identifier := prev(parser)
+			identifier := prev(parser)
 
 			if expect(parser, lexer.LT_EQUALS) { // LET / CONST {name} =
 				if accept(parser, lexer.LT_LPAREN) { // LET / CONST {name} = (
+
+					params := make([]string, 0)
+
 					// Parse function
 					for { // n1, n2, .. nx )
 						if accept(parser, lexer.LT_IDENTIFIER) {
+
+							params = append(params, prev(parser).Label)
 
 							if accept(parser, lexer.LT_RPAREN) {
 								break
@@ -339,31 +383,35 @@ func statement(parser *Parser) *AST_Statement {
 
 					expect(parser, lexer.LT_LAMBDA) // LET / CONST {name} = ((params)) =>
 
+					currentStatement.sType = ST_FUNCTION
+
+					functionStatements := &AST_Statement{sType: ST_STATEMENT_ARRAY, Statements: make([]*AST_Statement, 0)}
+
 					if accept(parser, lexer.LT_LCURLY) { // LET / CONST {name} = ((params)) => { (statement) }
+
 						for {
 							if accept(parser, lexer.LT_RCURLY) {
 								break
 							}
 
-							_statement.Statements = append(_statement.Statements, statement(parser))
+							functionStatements.Statements = append(functionStatements.Statements, statement(parser))
 
 						}
+
 					} else {
-						_statement.Statements = append(_statement.Statements, statement(parser)) // LET / CONST {name} = ((params)) => {statement}
+						functionStatements.sType = ST_STATEMENT
+						functionStatements.Statement = statement(parser) // LET / CONST {name} = ((params)) => {statement}
 					}
 
+					createFunctionNode(identifier.Label, params, functionStatements)
 					expect(parser, lexer.LT_SEMICOLON) // LET / CONST {name} = ((params)) => {statement};
-					return _statement
-				} else if is(parser, lexer.LT_NUMBER) {
-					expression(parser)
-					expect(parser, lexer.LT_SEMICOLON)
 
-				} else if is(parser, lexer.LT_FLOAT) {
-					expression(parser)
-					expect(parser, lexer.LT_SEMICOLON)
-
+					return currentStatement
 				} else if accept(parser, lexer.LT_STRING) {
 					fmt.Println("Hello")
+					expect(parser, lexer.LT_SEMICOLON)
+				} else {
+					expression(parser)
 					expect(parser, lexer.LT_SEMICOLON)
 				}
 			}
@@ -381,7 +429,7 @@ func statement(parser *Parser) *AST_Statement {
 					break
 				}
 
-				_statement.Statements = append(_statement.Statements, statement(parser))
+				currentStatement.Statements = append(currentStatement.Statements, statement(parser))
 			}
 		}
 	}
@@ -432,7 +480,8 @@ Expression Grammar
 
 expression -> term
 
-primary -> LT_NUMBER | LT_LPAREN expression LT_RPAREN
+//                                                                                 TODO 👇
+primary -> LT_NUMBER | LT_FLOAT | LT_LPAREN expression LT_RPAREN | LT_IDENTIFIER | "function call"
 
 term -> factor (( LT_PLUS | LT_MINUS ) factor)*
 
@@ -453,6 +502,21 @@ func primary(parser *Parser) *AST_Expression {
 		//fmt.Println(rhs)
 
 		expr := expressionLiteral(rhs)
+		return expr
+	} else if c == lexer.LT_IDENTIFIER {
+		name := currentLexeme(parser).Label
+
+		if accept(parser, lexer.LT_LPAREN) {
+			for {
+				if accept(parser, lexer.LT_RPAREN) {
+					break
+				}
+				expect(parser, lexer.LT_IDENTIFIER)
+				accept(parser, lexer.LT_COMMA)
+			}
+		}
+
+		expr := expressionLiteral(name)
 		return expr
 	} else if c == lexer.LT_LPAREN {
 		next(parser)

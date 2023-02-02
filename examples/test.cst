@@ -1,1 +1,4 @@
-const c = 1 + 2;
+//function with more statements
+const myFunction = (a, b) => {
+    const c = 3;
+};
