@@ -24,7 +24,7 @@ func TestLexerCreate(t *testing.T) {
 
 func TestLexerExpression(t *testing.T) {
 	input := "1 + 2 * 3 / (145 - 23)"
-	expectedTypes := [12]LexemeType{LT_NUMBER, LT_PLUS, LT_NUMBER, LT_MULTIPLY, LT_NUMBER, LT_DIVIDE, LT_LPAREN, LT_NUMBER, LT_MINUS, LT_NUMBER, LT_RPAREN, LT_END}
+	expectedTypes := [12]LexemeType{LT_LITERAL_NUMBER, LT_PLUS, LT_LITERAL_NUMBER, LT_MULTIPLY, LT_LITERAL_NUMBER, LT_DIVIDE, LT_LPAREN, LT_LITERAL_NUMBER, LT_MINUS, LT_LITERAL_NUMBER, LT_RPAREN, LT_END}
 	lexer := Create(input)
 
 	Start(&lexer)

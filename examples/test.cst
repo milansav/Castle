@@ -1,7 +1,7 @@
 //function with more statements
 const myFunction = (a, b) => {
-    const c = 3;
+    const c = 3 + 4 * 6;
 };
-const myFunction = (a, b) => {
-    const c = 3;
-};
+// const myFunction = (a, b) => {
+//     const c = 3;
+// };

@@ -60,9 +60,10 @@ const (
 	LT_IDENTIFIER
 
 	// Literals
-	LT_NUMBER
-	LT_FLOAT
-	LT_STRING
+	LT_LITERAL_NUMBER
+	LT_LITERAL_FLOAT
+	LT_LITERAL_STRING
+	LT_LITERAL_BOOL
 
 	//Keywords
 	LT_CONST
@@ -125,9 +126,10 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_IDENTIFIER: "LT_IDENTIFIER",
 
 	// Literals
-	LT_NUMBER: "LT_NUMBER",
-	LT_FLOAT:  "LT_FLOAT",
-	LT_STRING: "LT_STRING",
+	LT_LITERAL_NUMBER: "LT_LITERAL_NUMBER",
+	LT_LITERAL_FLOAT:  "LT_LITERAL_FLOAT",
+	LT_LITERAL_STRING: "LT_LITERAL_STRING",
+	LT_LITERAL_BOOL:   "LT_LITERAL_BOOL",
 
 	//Keywords
 	LT_CONST:     "LT_CONST",
@@ -273,14 +275,14 @@ func number(lexer *Lexer) Lexeme {
 
 	start := lexer.currentStep
 
-	numberType := LT_NUMBER
+	numberType := LT_LITERAL_NUMBER
 
 	c := currentRune(lexer)
 
 	for unicode.IsDigit(c) || c == ',' || (c == '.' && !isFloat) {
 		if c == '.' {
 			isFloat = true
-			numberType = LT_FLOAT
+			numberType = LT_LITERAL_FLOAT
 		}
 		step(lexer)
 		c = currentRune(lexer)
@@ -353,7 +355,7 @@ func other(lexer *Lexer) Lexeme {
 
 		lexeme.Type = LT_UNKNOWN
 	case '"':
-		lexeme.Type = LT_STRING
+		lexeme.Type = LT_LITERAL_STRING
 
 		start := lexer.currentStep
 		step(lexer)
