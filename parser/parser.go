@@ -105,6 +105,7 @@ const (
 	ET_UNARY
 	ET_LITERAL
 	ET_GROUP
+	ET_EXPRESSION_ARRAY
 )
 
 const (
@@ -117,11 +118,12 @@ const (
 )
 
 type AST_Expression struct {
-	eType    ExpressionType
-	lhs      *AST_Expression
-	operator lexer.LexemeType
-	rhs      *AST_Expression
-	value    string
+	EType         ExpressionType
+	Lhs           *AST_Expression
+	Operator      lexer.LexemeType
+	Rhs           *AST_Expression
+	Value         string
+	RhsExpression *AST_Expression
 }
 
 type AST_Function struct {
@@ -177,8 +179,8 @@ func createProgramNode() *AST_Program {
 
 func expressionLiteral(value string) *AST_Expression {
 	expr := &AST_Expression{
-		eType: ET_LITERAL,
-		value: value,
+		EType: ET_LITERAL,
+		Value: value,
 	}
 
 	return expr
@@ -186,17 +188,17 @@ func expressionLiteral(value string) *AST_Expression {
 
 func expressionUnary(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_rhs := &AST_Expression{
-		eType:    rhs.eType,
-		lhs:      rhs.lhs,
-		operator: rhs.operator,
-		rhs:      rhs.rhs,
-		value:    rhs.value,
+		EType:    rhs.EType,
+		Lhs:      rhs.Lhs,
+		Operator: rhs.Operator,
+		Rhs:      rhs.Rhs,
+		Value:    rhs.Value,
 	}
 
 	expr := &AST_Expression{
-		eType:    ET_UNARY,
-		operator: operator,
-		rhs:      _rhs,
+		EType:    ET_UNARY,
+		Operator: operator,
+		Rhs:      _rhs,
 	}
 
 	return expr
@@ -204,27 +206,27 @@ func expressionUnary(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expres
 
 func expressionBinary(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_lhs := &AST_Expression{
-		eType:    lhs.eType,
-		lhs:      lhs.lhs,
-		operator: lhs.operator,
-		rhs:      lhs.rhs,
-		value:    lhs.value,
+		EType:    lhs.EType,
+		Lhs:      lhs.Lhs,
+		Operator: lhs.Operator,
+		Rhs:      lhs.Rhs,
+		Value:    lhs.Value,
 	}
 
 	_rhs := &AST_Expression{
-		eType:    rhs.eType,
-		lhs:      rhs.lhs,
-		operator: rhs.operator,
-		rhs:      rhs.rhs,
-		value:    rhs.value,
+		EType:    rhs.EType,
+		Lhs:      rhs.Lhs,
+		Operator: rhs.Operator,
+		Rhs:      rhs.Rhs,
+		Value:    rhs.Value,
 	}
 
 	expr := &AST_Expression{
-		eType:    ET_BINARY,
-		lhs:      _lhs,
-		operator: operator,
-		rhs:      _rhs,
-		value:    "",
+		EType:    ET_BINARY,
+		Lhs:      _lhs,
+		Operator: operator,
+		Rhs:      _rhs,
+		Value:    "",
 	}
 
 	return expr
@@ -233,11 +235,11 @@ func expressionBinary(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_E
 func expressionGroup(lhs *AST_Expression) *AST_Expression {
 
 	expr := &AST_Expression{
-		eType:    ET_GROUP,
-		lhs:      lhs,
-		operator: lexer.LT_NONE,
-		rhs:      nil,
-		value:    "",
+		EType:    ET_GROUP,
+		Lhs:      lhs,
+		Operator: lexer.LT_NONE,
+		Rhs:      nil,
+		Value:    "",
 	}
 
 	return expr
@@ -256,15 +258,15 @@ func PrintTree(tree *AST_Expression, depth int) {
 		prefix += prefixChar
 	}
 
-	if tree.eType == ET_GROUP {
+	if tree.EType == ET_GROUP {
 		log(prefix, "GROUP")
 
 		//log(prefix, "LHS")
 
-		PrintTree(tree.lhs, depth+1)
-	} else if tree.eType == ET_BINARY {
+		PrintTree(tree.Lhs, depth+1)
+	} else if tree.EType == ET_BINARY {
 
-		switch tree.operator {
+		switch tree.Operator {
 		case lexer.LT_PLUS:
 			log(prefix, "ADD")
 		case lexer.LT_MINUS:
@@ -277,14 +279,14 @@ func PrintTree(tree *AST_Expression, depth int) {
 
 		//log(prefix, "LHS")
 
-		PrintTree(tree.lhs, depth+1)
+		PrintTree(tree.Lhs, depth+1)
 
 		//log(prefix, "RHS")
 
-		PrintTree(tree.rhs, depth+1)
-	} else if tree.eType == ET_LITERAL {
+		PrintTree(tree.Rhs, depth+1)
+	} else if tree.EType == ET_LITERAL {
 		log(prefix, "VALUE")
-		fmt.Println(prefix + prefixChar + tree.value)
+		fmt.Println(prefix + prefixChar + tree.Value)
 	}
 }
 
@@ -454,7 +456,7 @@ func statement(parser *Parser) *AST_Statement {
 			}
 		}
 	} else {
-
+		fmt.Println("Caught expression")
 		expr := expression(parser)
 
 		currentStatement.SType = ST_EXPRESSION
@@ -508,7 +510,7 @@ func condition(parser *Parser) {
 Expression Grammar
 
 //         TODO 👉 ~~~~~~~~~~~~~~~~
-expression -> term (LT_COMMA term)*
+expression -> compare (LT_COMMA compare)*
 
 //TODO 👇
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -528,6 +530,16 @@ func expression(parser *Parser) *AST_Expression {
 	// fmt.Println("Expression")
 
 	lhs := term(parser)
+
+	if accept(parser, lexer.LT_COMMA) {
+		expression := &AST_Expression{
+			EType:         ET_EXPRESSION_ARRAY,
+			Lhs:           lhs,
+			RhsExpression: expression(parser),
+		}
+
+		return expression
+	}
 
 	// condition := func() bool {
 	// 	one := hasNext(parser)
@@ -654,7 +666,7 @@ func primary(parser *Parser) *AST_Expression {
 
 	if c == lexer.LT_LITERAL_NUMBER || c == lexer.LT_LITERAL_FLOAT || c == lexer.LT_LITERAL_STRING || c == lexer.LT_LITERAL_BOOL {
 		rhs := currentLexeme(parser).Label
-		//fmt.Println(rhs)
+		fmt.Println(rhs)
 
 		expr := expressionLiteral(rhs)
 		return expr

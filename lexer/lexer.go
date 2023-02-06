@@ -279,7 +279,7 @@ func number(lexer *Lexer) Lexeme {
 
 	c := currentRune(lexer)
 
-	for unicode.IsDigit(c) || c == ',' || (c == '.' && !isFloat) {
+	for unicode.IsDigit(c) || (c == '.' && !isFloat) {
 		if c == '.' {
 			isFloat = true
 			numberType = LT_LITERAL_FLOAT
