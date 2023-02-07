@@ -45,7 +45,7 @@ func TestLexerExpression(t *testing.T) {
 }
 
 func TestLexerBigNumbers(t *testing.T) {
-	input := "1,200,300,400"
+	input := "1.200300400"
 
 	lexer := Create(input)
 
