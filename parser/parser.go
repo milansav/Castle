@@ -716,11 +716,12 @@ func primary(parser *Parser) *AST_Expression {
 
 		expr := expressionLiteral(name)
 		return expr
-	} else if c == lexer.LT_LPAREN {
-		next(parser)
+	} else if accept(parser, lexer.LT_LPAREN) {
 		expr := expression(parser)
 
 		expr = expressionGroup(expr)
+
+		expect(parser, lexer.LT_RPAREN)
 
 		//TODO: Check if current symbol is )
 		//fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
