@@ -115,6 +115,7 @@ const (
 	ST_FUNCTION
 	ST_DECLARATION
 	ST_STRUCT
+	ST_IF
 )
 
 type AST_Expression struct {
@@ -124,6 +125,11 @@ type AST_Expression struct {
 	Rhs           *AST_Expression
 	Value         string
 	RhsExpression *AST_Expression
+}
+
+type AST_If struct {
+	Condition  *AST_Expression
+	Statements []*AST_Statement
 }
 
 type AST_Function struct {
@@ -144,6 +150,7 @@ type AST_Statement struct {
 	Expression  *AST_Expression
 	Function    *AST_Function
 	Declaration *AST_Declaration
+	If          *AST_If
 }
 
 type AST_Program struct {
@@ -442,7 +449,14 @@ func statement(parser *Parser) *AST_Statement {
 	} else if accept(parser, lexer.LT_IF) { // IF
 		expect(parser, lexer.LT_LPAREN)
 
-		condition(parser)
+		currentStatement.SType = ST_IF
+
+		expr := expression(parser)
+
+		condition := &AST_If{
+			Condition:  expr,
+			Statements: make([]*AST_Statement, 0),
+		}
 
 		expect(parser, lexer.LT_RPAREN)
 
@@ -452,9 +466,16 @@ func statement(parser *Parser) *AST_Statement {
 					break
 				}
 
-				currentStatement.Statements = append(currentStatement.Statements, statement(parser))
+				condition.Statements = append(condition.Statements, statement(parser))
 			}
 		}
+
+		currentStatement.If = condition
+
+		return currentStatement
+	} else if accept(parser, lexer.LT_RETURN) { // RETURN
+		currentStatement.SType = ST_EXPRESSION
+		currentStatement.Expression = expression(parser)
 	} else {
 		fmt.Println("Caught expression")
 		expr := expression(parser)
@@ -512,8 +533,6 @@ Expression Grammar
 //         TODO 👉 ~~~~~~~~~~~~~~~~
 expression -> compare (LT_COMMA compare)*
 
-//TODO 👇
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 compare -> term (( LT_LESS | LT_GREATER | LT_LEQ | LT_LGE | LT_EQ | LT_NE ) term)*
 
 term -> factor (( LT_PLUS | LT_MINUS ) factor)*
@@ -529,7 +548,7 @@ func expression(parser *Parser) *AST_Expression {
 
 	// fmt.Println("Expression")
 
-	lhs := term(parser)
+	lhs := compare(parser)
 
 	if accept(parser, lexer.LT_COMMA) {
 		expression := &AST_Expression{
@@ -541,31 +560,39 @@ func expression(parser *Parser) *AST_Expression {
 		return expression
 	}
 
-	// condition := func() bool {
-	// 	one := hasNext(parser)
-	// 	if !one {
-	// 		return false
-	// 	}
-	// 	two := currentLexeme(parser).Type == lexer.LT_MINUS
-	// 	three := currentLexeme(parser).Type == lexer.LT_PLUS
+	return lhs
+}
 
-	// 	four := currentLexeme(parser).Type == lexer.LT_OR
-	// 	five := currentLexeme(parser).Type == lexer.LT_NOR
-	// 	six := currentLexeme(parser).Type == lexer.LT_XOR
-	// 	seven := currentLexeme(parser).Type == lexer.LT_XNOR
+func compare(parser *Parser) *AST_Expression {
+	lhs := term(parser)
 
-	// 	isLogical := four || five || six || seven
+	condition := func() bool {
+		one := hasNext(parser)
+		if !one {
+			return false
+		}
 
-	// 	return (two || three || isLogical)
-	// }
+		four := currentLexeme(parser).Type == lexer.LT_OR
+		five := currentLexeme(parser).Type == lexer.LT_NOR
+		six := currentLexeme(parser).Type == lexer.LT_XOR
+		seven := currentLexeme(parser).Type == lexer.LT_XNOR
+		eight := currentLexeme(parser).Type == lexer.LT_AND
+		nine := currentLexeme(parser).Type == lexer.LT_NAND
+		ten := currentLexeme(parser).Type == lexer.LT_XAND
+		eleven := currentLexeme(parser).Type == lexer.LT_XNAND
 
-	// for condition() {
-	// 	operator := currentLexeme(parser).Type
-	// 	// fmt.Println(operator)
-	// 	next(parser)
-	// 	rhs := factor(parser)
-	// 	lhs = expressionBinary(lhs, operator, rhs)
-	// }
+		isLogical := four || five || six || seven || eight || nine || ten || eleven
+
+		return isLogical
+	}
+
+	for condition() {
+		operator := currentLexeme(parser).Type
+
+		next(parser)
+		rhs := term(parser)
+		lhs = expressionBinary(lhs, operator, rhs)
+	}
 
 	return lhs
 }
@@ -584,14 +611,15 @@ func term(parser *Parser) *AST_Expression {
 		two := currentLexeme(parser).Type == lexer.LT_MINUS
 		three := currentLexeme(parser).Type == lexer.LT_PLUS
 
-		four := currentLexeme(parser).Type == lexer.LT_OR
-		five := currentLexeme(parser).Type == lexer.LT_NOR
-		six := currentLexeme(parser).Type == lexer.LT_XOR
-		seven := currentLexeme(parser).Type == lexer.LT_XNOR
+		// four := currentLexeme(parser).Type == lexer.LT_OR
+		// five := currentLexeme(parser).Type == lexer.LT_NOR
+		// six := currentLexeme(parser).Type == lexer.LT_XOR
+		// seven := currentLexeme(parser).Type == lexer.LT_XNOR
 
-		isLogical := four || five || six || seven
+		// isLogical := four || five || six || seven
 
-		return (two || three || isLogical)
+		// return (two || three || isLogical)
+		return two || three
 	}
 
 	for condition() {
@@ -619,14 +647,15 @@ func factor(parser *Parser) *AST_Expression {
 		two := currentLexeme(parser).Type == lexer.LT_MULTIPLY
 		three := currentLexeme(parser).Type == lexer.LT_DIVIDE
 
-		four := currentLexeme(parser).Type == lexer.LT_AND
-		five := currentLexeme(parser).Type == lexer.LT_NAND
-		six := currentLexeme(parser).Type == lexer.LT_XAND
-		seven := currentLexeme(parser).Type == lexer.LT_XNAND
+		// four := currentLexeme(parser).Type == lexer.LT_AND
+		// five := currentLexeme(parser).Type == lexer.LT_NAND
+		// six := currentLexeme(parser).Type == lexer.LT_XAND
+		// seven := currentLexeme(parser).Type == lexer.LT_XNAND
 
-		isLogical := four || five || six || seven
+		// isLogical := four || five || six || seven
 
-		return (two || three || isLogical)
+		// return (two || three || isLogical)
+		return two || three
 	}
 
 	for isCondition() {

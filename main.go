@@ -34,13 +34,6 @@ func main() {
 		program := parser.StartNew(&mainParser)
 
 		fmt.Println(len(program.Statements))
-		fmt.Println(program.Statements[0].Expression)
-		fmt.Println(program.Statements[0].Expression.Lhs)
-		// fmt.Println(program.Statements[0].Function.Name)
-		// fmt.Println(program.Statements[0].Function.Statement.Statements[0].Declaration.Value)
-
-		//expressionParser := parser.Create(mainLexer)
-		//result := parser.StartExpressionParser(&expressionParser)
 
 		//fmt.Println(string(contents))
 		//for _, value := range result {

@@ -74,6 +74,7 @@ const (
 	LT_INTERFACE
 	LT_STRUCT
 	LT_OF
+	LT_RETURN
 
 	//Misc operators
 	LT_LAMBDA
@@ -140,6 +141,7 @@ var LexemeTypeLabels = map[LexemeType]string{
 	LT_INTERFACE: "LT_INTERFACE",
 	LT_STRUCT:    "LT_STRUCT",
 	LT_OF:        "LT_OF",
+	LT_RETURN:    "LT_RETURN",
 
 	//Misc operators
 	LT_LAMBDA:    "LT_LAMBDA",
@@ -164,6 +166,7 @@ var keywords = map[string]LexemeType{
 	"interface": LT_INTERFACE,
 	"struct":    LT_STRUCT,
 	"of":        LT_OF,
+	"return":    LT_RETURN,
 
 	"and":   LT_AND,
 	"or":    LT_OR,
