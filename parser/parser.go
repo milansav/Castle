@@ -530,7 +530,6 @@ func condition(parser *Parser) {
 
 Expression Grammar
 
-//         TODO 👉 ~~~~~~~~~~~~~~~~
 expression -> compare (LT_COMMA compare)*
 
 compare -> term (( LT_LESS | LT_GREATER | LT_LEQ | LT_LGE | LT_EQ | LT_NE ) term)*
@@ -611,14 +610,6 @@ func term(parser *Parser) *AST_Expression {
 		two := currentLexeme(parser).Type == lexer.LT_MINUS
 		three := currentLexeme(parser).Type == lexer.LT_PLUS
 
-		// four := currentLexeme(parser).Type == lexer.LT_OR
-		// five := currentLexeme(parser).Type == lexer.LT_NOR
-		// six := currentLexeme(parser).Type == lexer.LT_XOR
-		// seven := currentLexeme(parser).Type == lexer.LT_XNOR
-
-		// isLogical := four || five || six || seven
-
-		// return (two || three || isLogical)
 		return two || three
 	}
 
@@ -647,14 +638,6 @@ func factor(parser *Parser) *AST_Expression {
 		two := currentLexeme(parser).Type == lexer.LT_MULTIPLY
 		three := currentLexeme(parser).Type == lexer.LT_DIVIDE
 
-		// four := currentLexeme(parser).Type == lexer.LT_AND
-		// five := currentLexeme(parser).Type == lexer.LT_NAND
-		// six := currentLexeme(parser).Type == lexer.LT_XAND
-		// seven := currentLexeme(parser).Type == lexer.LT_XNAND
-
-		// isLogical := four || five || six || seven
-
-		// return (two || three || isLogical)
 		return two || three
 	}
 
