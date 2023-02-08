@@ -1,5 +1,5 @@
 // $$ indicates macro
-const $$main = (argc int, argv string[]) => {
+const $$main = (argc, argv) => {
     const c = "Hello World";
 };
 
@@ -11,29 +11,10 @@ const myFunction = (a) => {
 //function with more statements
 const myFunction = (a, b) => {
     const c = a + b;
-    c;
 }
 
-const a: int = 0;
-
-struct Bob {
-    height: int;
-}
-
-interface Carl of Bob {
-    speak = () => {
-
-    };
-
-    breathe = () => {
-
-    };
-}
+const a = 0;
 
 if (3 > 2  or 3 < 4) {
-
-} else if (2 < 3 and 5 > 6) {
-
-} else {
 
 }

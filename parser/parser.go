@@ -377,6 +377,10 @@ func statement(parser *Parser) *AST_Statement {
 
 		// variableType := prev(parser)
 
+		if accept(parser, lexer.LT_MACRO) {
+			// Is macro
+		}
+
 		// Declare variable type here to be used later
 		if expect(parser, lexer.LT_IDENTIFIER) { // LET / CONST {name}
 
@@ -488,44 +492,6 @@ func statement(parser *Parser) *AST_Statement {
 	return currentStatement
 }
 
-// logicop -> LT_AND | LT_OR | LT_NOR | LT_NAND | LT_XOR | LT_XAND | LT_XNOR | LT_XNAND | LT_
-// condition -> expression (logicop expression)*
-func condition(parser *Parser) {
-	expression(parser)
-
-	isLogicop := func(c lexer.LexemeType) bool {
-		switch c {
-		case lexer.LT_AND:
-			fallthrough
-		case lexer.LT_OR:
-			fallthrough
-		case lexer.LT_NAND:
-			fallthrough
-		case lexer.LT_NOR:
-			fallthrough
-		case lexer.LT_XAND:
-			fallthrough
-		case lexer.LT_XOR:
-			fallthrough
-		case lexer.LT_XNAND:
-			fallthrough
-		case lexer.LT_XNOR:
-			return true
-
-		default:
-			return false
-		}
-	}
-
-	for {
-		if !isLogicop(curr(parser).Type) {
-			break
-		}
-
-		expression(parser)
-	}
-}
-
 /*
 
 Expression Grammar
@@ -547,7 +513,7 @@ func expression(parser *Parser) *AST_Expression {
 
 	// fmt.Println("Expression")
 
-	lhs := compare(parser)
+	lhs := compareOR(parser)
 
 	if accept(parser, lexer.LT_COMMA) {
 		expression := &AST_Expression{
@@ -562,7 +528,95 @@ func expression(parser *Parser) *AST_Expression {
 	return lhs
 }
 
-func compare(parser *Parser) *AST_Expression {
+func compareOR(parser *Parser) *AST_Expression {
+	lhs := compareAND(parser)
+
+	condition := func() bool {
+		one := hasNext(parser)
+		if !one {
+			return false
+		}
+
+		two := currentLexeme(parser).Type == lexer.LT_OR
+		three := currentLexeme(parser).Type == lexer.LT_NOR
+		four := currentLexeme(parser).Type == lexer.LT_XOR
+		five := currentLexeme(parser).Type == lexer.LT_XNOR
+
+		isLogical := two || three || four || five
+
+		return isLogical
+	}
+
+	for condition() {
+		operator := currentLexeme(parser).Type
+
+		next(parser)
+		rhs := compareAND(parser)
+		lhs = expressionBinary(lhs, operator, rhs)
+	}
+
+	return lhs
+}
+
+func compareAND(parser *Parser) *AST_Expression {
+	lhs := compareNEQEQ(parser)
+
+	condition := func() bool {
+		one := hasNext(parser)
+		if !one {
+			return false
+		}
+
+		two := currentLexeme(parser).Type == lexer.LT_AND
+		three := currentLexeme(parser).Type == lexer.LT_NAND
+		four := currentLexeme(parser).Type == lexer.LT_XAND
+		five := currentLexeme(parser).Type == lexer.LT_XNAND
+
+		isLogical := two || three || four || five
+
+		return isLogical
+	}
+
+	for condition() {
+		operator := currentLexeme(parser).Type
+
+		next(parser)
+		rhs := compareNEQEQ(parser)
+		lhs = expressionBinary(lhs, operator, rhs)
+	}
+
+	return lhs
+}
+
+func compareNEQEQ(parser *Parser) *AST_Expression {
+	lhs := compareLEQGEQLTGT(parser)
+
+	condition := func() bool {
+		one := hasNext(parser)
+		if !one {
+			return false
+		}
+
+		two := currentLexeme(parser).Type == lexer.LT_NEQ
+		three := currentLexeme(parser).Type == lexer.LT_EQ
+
+		isLogical := two || three
+
+		return isLogical
+	}
+
+	for condition() {
+		operator := currentLexeme(parser).Type
+
+		next(parser)
+		rhs := compareLEQGEQLTGT(parser)
+		lhs = expressionBinary(lhs, operator, rhs)
+	}
+
+	return lhs
+}
+
+func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
 	lhs := term(parser)
 
 	condition := func() bool {
@@ -571,16 +625,12 @@ func compare(parser *Parser) *AST_Expression {
 			return false
 		}
 
-		four := currentLexeme(parser).Type == lexer.LT_OR
-		five := currentLexeme(parser).Type == lexer.LT_NOR
-		six := currentLexeme(parser).Type == lexer.LT_XOR
-		seven := currentLexeme(parser).Type == lexer.LT_XNOR
-		eight := currentLexeme(parser).Type == lexer.LT_AND
-		nine := currentLexeme(parser).Type == lexer.LT_NAND
-		ten := currentLexeme(parser).Type == lexer.LT_XAND
-		eleven := currentLexeme(parser).Type == lexer.LT_XNAND
+		two := currentLexeme(parser).Type == lexer.LT_LEQ
+		three := currentLexeme(parser).Type == lexer.LT_GEQ
+		four := currentLexeme(parser).Type == lexer.LT_LCHEVRON
+		five := currentLexeme(parser).Type == lexer.LT_RCHEVRON
 
-		isLogical := four || five || six || seven || eight || nine || ten || eleven
+		isLogical := two || three || four || five
 
 		return isLogical
 	}

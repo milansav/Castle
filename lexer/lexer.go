@@ -35,6 +35,10 @@ const (
 
 	//Logical
 	LT_COMPARE
+	LT_GEQ
+	LT_LEQ
+	LT_NEQ
+	LT_EQ
 	LT_AND
 	LT_OR
 	LT_NAND
@@ -103,6 +107,10 @@ var LexemeTypeLabels = map[LexemeType]string{
 
 	//Logical
 	LT_COMPARE: "LT_COMPARE",
+	LT_GEQ:     "LT_GEQ",
+	LT_LEQ:     "LT_LEQ",
+	LT_NEQ:     "LT_NEQ",
+	LT_EQ:      "LT_EQ",
 	LT_AND:     "LT_AND",
 	LT_OR:      "LT_OR",
 	LT_NAND:    "LT_NAND",
@@ -312,6 +320,9 @@ func other(lexer *Lexer) Lexeme {
 		if nextRune(lexer) == '>' {
 			lexeme.Type = LT_LAMBDA
 			step(lexer)
+		} else if nextRune(lexer) == '=' {
+			lexeme.Type = LT_EQ
+			step(lexer)
 		}
 	case '+':
 		lexeme.Type = LT_PLUS
@@ -335,8 +346,20 @@ func other(lexer *Lexer) Lexeme {
 		lexeme.Type = LT_RCURLY
 	case '<':
 		lexeme.Type = LT_LCHEVRON
+
+		if nextRune(lexer) == '=' {
+			lexeme.Type = LT_LEQ
+			step(lexer)
+		}
+
 	case '>':
 		lexeme.Type = LT_RCHEVRON
+
+		if nextRune(lexer) == '=' {
+			lexeme.Type = LT_GEQ
+			step(lexer)
+		}
+
 	case '[':
 		lexeme.Type = LT_LBRACKET
 	case ']':
@@ -349,6 +372,15 @@ func other(lexer *Lexer) Lexeme {
 		lexeme.Type = LT_SEMICOLON
 	case ':':
 		lexeme.Type = LT_COLON
+
+	case '!':
+		lexeme.Type = LT_BANG
+
+		if nextRune(lexer) == '=' {
+			lexeme.Type = LT_NEQ
+			step(lexer)
+		}
+
 	case '$':
 		if nextRune(lexer) == '$' {
 			lexeme.Type = LT_MACRO
