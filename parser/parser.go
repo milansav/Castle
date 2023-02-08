@@ -537,6 +537,7 @@ func compareOR(parser *Parser) *AST_Expression {
 			return false
 		}
 
+		//TODO replace all of those conditions with accept
 		two := currentLexeme(parser).Type == lexer.LT_OR
 		three := currentLexeme(parser).Type == lexer.LT_NOR
 		four := currentLexeme(parser).Type == lexer.LT_XOR
@@ -550,6 +551,7 @@ func compareOR(parser *Parser) *AST_Expression {
 	for condition() {
 		operator := currentLexeme(parser).Type
 
+		//TODO remove this
 		next(parser)
 		rhs := compareAND(parser)
 		lhs = expressionBinary(lhs, operator, rhs)
