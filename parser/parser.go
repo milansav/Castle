@@ -486,6 +486,8 @@ func statement(parser *Parser) *AST_Statement {
 		currentStatement.SType = ST_EXPRESSION
 		currentStatement.Expression = expr
 
+		expect(parser, lexer.LT_SEMICOLON)
+
 		return currentStatement
 	}
 
@@ -512,7 +514,7 @@ primary -> LT_NUMBER | LT_FLOAT | LT_LPAREN expression LT_RPAREN | LT_IDENTIFIER
 
 func expression(parser *Parser) *AST_Expression {
 
-	fmt.Println("Expression")
+	// fmt.Println("Expression")
 
 	lhs := compareOR(parser)
 
@@ -531,7 +533,7 @@ func expression(parser *Parser) *AST_Expression {
 
 func compareOR(parser *Parser) *AST_Expression {
 
-	fmt.Println("compareOR")
+	// fmt.Println("compareOR")
 
 	lhs := compareAND(parser)
 
@@ -547,7 +549,7 @@ func compareOR(parser *Parser) *AST_Expression {
 
 func compareAND(parser *Parser) *AST_Expression {
 
-	fmt.Println("compareAND")
+	// fmt.Println("compareAND")
 
 	lhs := compareNEQEQ(parser)
 
@@ -563,7 +565,7 @@ func compareAND(parser *Parser) *AST_Expression {
 
 func compareNEQEQ(parser *Parser) *AST_Expression {
 
-	fmt.Println("compareNEQEQ")
+	// fmt.Println("compareNEQEQ")
 
 	lhs := compareLEQGEQLTGT(parser)
 
@@ -579,7 +581,7 @@ func compareNEQEQ(parser *Parser) *AST_Expression {
 
 func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
 
-	fmt.Println("compareLEQGEQLTGT")
+	// fmt.Println("compareLEQGEQLTGT")
 
 	lhs := term(parser)
 
@@ -595,11 +597,9 @@ func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
 
 func term(parser *Parser) *AST_Expression {
 
-	fmt.Println("Term")
+	// fmt.Println("Term")
 
 	lhs := factor(parser)
-
-	fmt.Printf("term %s\n", curr(parser).Label)
 
 	for accept(parser, lexer.LT_MINUS) || accept(parser, lexer.LT_PLUS) {
 		operator := prev(parser).Type
@@ -613,16 +613,12 @@ func term(parser *Parser) *AST_Expression {
 
 func factor(parser *Parser) *AST_Expression {
 
-	fmt.Println("Factor")
+	// fmt.Println("Factor")
 
 	lhs := unary(parser)
 
-	fmt.Printf("factor %s\n", curr(parser).Label)
-
 	for accept(parser, lexer.LT_MULTIPLY) || accept(parser, lexer.LT_DIVIDE) {
 		operator := prev(parser).Type
-
-		fmt.Println("inside")
 
 		rhs := unary(parser)
 		lhs = createExpressionBinaryNode(lhs, operator, rhs)
@@ -633,7 +629,7 @@ func factor(parser *Parser) *AST_Expression {
 
 func unary(parser *Parser) *AST_Expression {
 
-	fmt.Println("Unary")
+	// fmt.Println("Unary")
 
 	if accept(parser, lexer.LT_BANG) || accept(parser, lexer.LT_MINUS) {
 		operator := prev(parser).Type
@@ -648,14 +644,14 @@ func unary(parser *Parser) *AST_Expression {
 
 func primary(parser *Parser) *AST_Expression {
 
-	fmt.Println("Primary")
+	// fmt.Println("Primary")
 
-	c := currentLexeme(parser).Type
+	c := curr(parser).Type
 
 	fmt.Println(lexer.LexemeTypeLabels[c])
 
 	if accept(parser, lexer.LT_LITERAL_NUMBER) || accept(parser, lexer.LT_LITERAL_FLOAT) || accept(parser, lexer.LT_LITERAL_STRING) || accept(parser, lexer.LT_LITERAL_BOOL) {
-		rhs := currentLexeme(parser).Label
+		rhs := prev(parser).Label
 		fmt.Println(rhs)
 
 		expr := createExpressionLiteralNode(rhs)
@@ -689,18 +685,10 @@ func primary(parser *Parser) *AST_Expression {
 
 		expect(parser, lexer.LT_RPAREN)
 
-		fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
+		// fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
 		return expr
 	} else {
 		log.Panic("Unexpected path")
 		return nil
 	}
-}
-
-func currentLexeme(parser *Parser) lexer.Lexeme {
-	currLexeme := parser.lexemes[parser.currentStep]
-
-	//fmt.Printf("Current Lexeme: %s\n", currLexeme.Label)
-
-	return currLexeme
 }
