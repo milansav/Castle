@@ -175,6 +175,8 @@ var keywords = map[string]LexemeType{
 	"struct":    LT_STRUCT,
 	"of":        LT_OF,
 	"return":    LT_RETURN,
+	"true":      LT_LITERAL_BOOL,
+	"false":     LT_LITERAL_BOOL,
 
 	"and":   LT_AND,
 	"or":    LT_OR,
