@@ -474,9 +474,12 @@ func statement(parser *Parser) *AST_Statement {
 		currentStatement.If = condition
 
 		return currentStatement
+
 	} else if accept(parser, lexer.LT_RETURN) { // RETURN
 		currentStatement.SType = ST_EXPRESSION
 		currentStatement.Expression = expression(parser)
+
+		return currentStatement
 	} else {
 		fmt.Println("Caught expression")
 		expr := expression(parser)
@@ -486,7 +489,9 @@ func statement(parser *Parser) *AST_Statement {
 
 		return currentStatement
 	}
-	return currentStatement
+
+	log.Panic("Unexpected path")
+	return nil
 }
 
 /*

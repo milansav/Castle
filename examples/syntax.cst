@@ -5,7 +5,7 @@ const $$main = (argc, argv) => {
 
 //function with one statement
 const myFunction = (a) => {
-    
+    myFunction(1+1, "Hello World", identifier);
 };
 
 //function with more statements
