@@ -65,7 +65,6 @@ func is(parser *Parser, symbol lexer.LexemeType) bool {
 		fmt.Printf("Accepted symbol: %s\n", lexer.LexemeTypeLabels[parser.currentSym])
 		return true
 	}
-
 	return false
 }
 
@@ -513,7 +512,7 @@ primary -> LT_NUMBER | LT_FLOAT | LT_LPAREN expression LT_RPAREN | LT_IDENTIFIER
 
 func expression(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Expression")
+	fmt.Println("Expression")
 
 	lhs := compareOR(parser)
 
@@ -531,30 +530,14 @@ func expression(parser *Parser) *AST_Expression {
 }
 
 func compareOR(parser *Parser) *AST_Expression {
+
+	fmt.Println("compareOR")
+
 	lhs := compareAND(parser)
 
-	condition := func() bool {
-		one := hasNext(parser)
-		if !one {
-			return false
-		}
+	for accept(parser, lexer.LT_OR) || accept(parser, lexer.LT_NOR) || accept(parser, lexer.LT_XOR) || accept(parser, lexer.LT_XNOR) {
+		operator := prev(parser).Type
 
-		//TODO replace all of those conditions with accept
-		two := currentLexeme(parser).Type == lexer.LT_OR
-		three := currentLexeme(parser).Type == lexer.LT_NOR
-		four := currentLexeme(parser).Type == lexer.LT_XOR
-		five := currentLexeme(parser).Type == lexer.LT_XNOR
-
-		isLogical := two || three || four || five
-
-		return isLogical
-	}
-
-	for condition() {
-		operator := currentLexeme(parser).Type
-
-		//TODO remove this
-		next(parser)
 		rhs := compareAND(parser)
 		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
@@ -563,28 +546,14 @@ func compareOR(parser *Parser) *AST_Expression {
 }
 
 func compareAND(parser *Parser) *AST_Expression {
+
+	fmt.Println("compareAND")
+
 	lhs := compareNEQEQ(parser)
 
-	condition := func() bool {
-		one := hasNext(parser)
-		if !one {
-			return false
-		}
+	for accept(parser, lexer.LT_AND) || accept(parser, lexer.LT_NAND) || accept(parser, lexer.LT_XAND) || accept(parser, lexer.LT_XNAND) {
+		operator := prev(parser).Type
 
-		two := currentLexeme(parser).Type == lexer.LT_AND
-		three := currentLexeme(parser).Type == lexer.LT_NAND
-		four := currentLexeme(parser).Type == lexer.LT_XAND
-		five := currentLexeme(parser).Type == lexer.LT_XNAND
-
-		isLogical := two || three || four || five
-
-		return isLogical
-	}
-
-	for condition() {
-		operator := currentLexeme(parser).Type
-
-		next(parser)
 		rhs := compareNEQEQ(parser)
 		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
@@ -593,26 +562,14 @@ func compareAND(parser *Parser) *AST_Expression {
 }
 
 func compareNEQEQ(parser *Parser) *AST_Expression {
+
+	fmt.Println("compareNEQEQ")
+
 	lhs := compareLEQGEQLTGT(parser)
 
-	condition := func() bool {
-		one := hasNext(parser)
-		if !one {
-			return false
-		}
+	for accept(parser, lexer.LT_NEQ) || accept(parser, lexer.LT_EQ) {
+		operator := prev(parser).Type
 
-		two := currentLexeme(parser).Type == lexer.LT_NEQ
-		three := currentLexeme(parser).Type == lexer.LT_EQ
-
-		isLogical := two || three
-
-		return isLogical
-	}
-
-	for condition() {
-		operator := currentLexeme(parser).Type
-
-		next(parser)
 		rhs := compareLEQGEQLTGT(parser)
 		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
@@ -621,28 +578,14 @@ func compareNEQEQ(parser *Parser) *AST_Expression {
 }
 
 func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
+
+	fmt.Println("compareLEQGEQLTGT")
+
 	lhs := term(parser)
 
-	condition := func() bool {
-		one := hasNext(parser)
-		if !one {
-			return false
-		}
+	for accept(parser, lexer.LT_LEQ) || accept(parser, lexer.LT_GEQ) || accept(parser, lexer.LT_LCHEVRON) || accept(parser, lexer.LT_RCHEVRON) {
+		operator := prev(parser).Type
 
-		two := currentLexeme(parser).Type == lexer.LT_LEQ
-		three := currentLexeme(parser).Type == lexer.LT_GEQ
-		four := currentLexeme(parser).Type == lexer.LT_LCHEVRON
-		five := currentLexeme(parser).Type == lexer.LT_RCHEVRON
-
-		isLogical := two || three || four || five
-
-		return isLogical
-	}
-
-	for condition() {
-		operator := currentLexeme(parser).Type
-
-		next(parser)
 		rhs := term(parser)
 		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
@@ -652,25 +595,15 @@ func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
 
 func term(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Term")
+	fmt.Println("Term")
 
 	lhs := factor(parser)
 
-	condition := func() bool {
-		one := hasNext(parser)
-		if !one {
-			return false
-		}
-		two := currentLexeme(parser).Type == lexer.LT_MINUS
-		three := currentLexeme(parser).Type == lexer.LT_PLUS
+	fmt.Printf("term %s\n", curr(parser).Label)
 
-		return two || three
-	}
+	for accept(parser, lexer.LT_MINUS) || accept(parser, lexer.LT_PLUS) {
+		operator := prev(parser).Type
 
-	for condition() {
-		operator := currentLexeme(parser).Type
-
-		next(parser)
 		rhs := factor(parser)
 		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
@@ -680,25 +613,17 @@ func term(parser *Parser) *AST_Expression {
 
 func factor(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Factor")
+	fmt.Println("Factor")
 
 	lhs := unary(parser)
 
-	isCondition := func() bool {
-		one := hasNext(parser)
-		if !one {
-			return false
-		}
-		two := currentLexeme(parser).Type == lexer.LT_MULTIPLY
-		three := currentLexeme(parser).Type == lexer.LT_DIVIDE
+	fmt.Printf("factor %s\n", curr(parser).Label)
 
-		return two || three
-	}
+	for accept(parser, lexer.LT_MULTIPLY) || accept(parser, lexer.LT_DIVIDE) {
+		operator := prev(parser).Type
 
-	for isCondition() {
-		operator := currentLexeme(parser).Type
-		//fmt.Println(operator)
-		next(parser)
+		fmt.Println("inside")
+
 		rhs := unary(parser)
 		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
@@ -708,36 +633,35 @@ func factor(parser *Parser) *AST_Expression {
 
 func unary(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Unary")
+	fmt.Println("Unary")
 
-	if currentLexeme(parser).Type == lexer.LT_BANG || currentLexeme(parser).Type == lexer.LT_MINUS {
-		operator := currentLexeme(parser).Type
+	if accept(parser, lexer.LT_BANG) || accept(parser, lexer.LT_MINUS) {
+		operator := prev(parser).Type
 
-		next(parser)
 		rhs := unary(parser)
 		return createExpressionUnaryNode(operator, rhs)
 	}
 
 	rhs := primary(parser)
-	next(parser)
 	return rhs
 }
 
 func primary(parser *Parser) *AST_Expression {
-	// fmt.Println("Primary")
+
+	fmt.Println("Primary")
 
 	c := currentLexeme(parser).Type
 
 	fmt.Println(lexer.LexemeTypeLabels[c])
 
-	if c == lexer.LT_LITERAL_NUMBER || c == lexer.LT_LITERAL_FLOAT || c == lexer.LT_LITERAL_STRING || c == lexer.LT_LITERAL_BOOL {
+	if accept(parser, lexer.LT_LITERAL_NUMBER) || accept(parser, lexer.LT_LITERAL_FLOAT) || accept(parser, lexer.LT_LITERAL_STRING) || accept(parser, lexer.LT_LITERAL_BOOL) {
 		rhs := currentLexeme(parser).Label
 		fmt.Println(rhs)
 
 		expr := createExpressionLiteralNode(rhs)
 		return expr
-	} else if c == lexer.LT_IDENTIFIER {
-		name := currentLexeme(parser).Label
+	} else if accept(parser, lexer.LT_IDENTIFIER) {
+		name := prev(parser).Label
 
 		expressions := make([]*AST_Expression, 0)
 
@@ -765,7 +689,7 @@ func primary(parser *Parser) *AST_Expression {
 
 		expect(parser, lexer.LT_RPAREN)
 
-		//fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
+		fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
 		return expr
 	} else {
 		log.Panic("Unexpected path")
