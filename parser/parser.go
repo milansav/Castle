@@ -106,6 +106,7 @@ const (
 	ET_LITERAL
 	ET_GROUP
 	ET_EXPRESSION_ARRAY
+	ET_FUNCTION_CALL
 )
 
 const (
@@ -125,6 +126,12 @@ type AST_Expression struct {
 	Rhs           *AST_Expression
 	Value         string
 	RhsExpression *AST_Expression
+	FunctionCall  *AST_FunctionCall
+}
+
+type AST_FunctionCall struct {
+	name   string
+	params []*AST_Expression
 }
 
 type AST_If struct {
@@ -184,7 +191,7 @@ func createProgramNode() *AST_Program {
 	return prog
 }
 
-func expressionLiteral(value string) *AST_Expression {
+func createExpressionLiteralNode(value string) *AST_Expression {
 	expr := &AST_Expression{
 		EType: ET_LITERAL,
 		Value: value,
@@ -193,7 +200,7 @@ func expressionLiteral(value string) *AST_Expression {
 	return expr
 }
 
-func expressionUnary(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
+func createExpressionUnaryNode(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_rhs := &AST_Expression{
 		EType:    rhs.EType,
 		Lhs:      rhs.Lhs,
@@ -211,7 +218,7 @@ func expressionUnary(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expres
 	return expr
 }
 
-func expressionBinary(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
+func createExpressionBinaryNode(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_lhs := &AST_Expression{
 		EType:    lhs.EType,
 		Lhs:      lhs.Lhs,
@@ -239,7 +246,7 @@ func expressionBinary(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_E
 	return expr
 }
 
-func expressionGroup(lhs *AST_Expression) *AST_Expression {
+func createExpressionGroupNode(lhs *AST_Expression) *AST_Expression {
 
 	expr := &AST_Expression{
 		EType:    ET_GROUP,
@@ -252,6 +259,19 @@ func expressionGroup(lhs *AST_Expression) *AST_Expression {
 	return expr
 }
 
+func createExpressionFunctionCallNode(name string, params []*AST_Expression) *AST_Expression {
+	expr := &AST_Expression{
+		EType: ET_FUNCTION_CALL,
+		FunctionCall: &AST_FunctionCall{
+			name:   name,
+			params: params,
+		},
+	}
+
+	return expr
+}
+
+// TODO create dedicated AST printer
 func PrintTree(tree *AST_Expression, depth int) {
 
 	prefixChar := "≫ "
@@ -301,30 +321,30 @@ func Create(lexer lexer.Lexer) Parser {
 	return Parser{lexemes: lexer.Lexemes, currentLexeme: lexer.Lexemes[0], currentSym: lexer.Lexemes[0].Type}
 }
 
-func StartExpressionParser(parser *Parser) []*AST_Expression {
+// func StartExpressionParser(parser *Parser) []*AST_Expression {
 
-	expressions := make([]*AST_Expression, 0)
+// 	expressions := make([]*AST_Expression, 0)
 
-	for hasNext(parser) {
+// 	for hasNext(parser) {
 
-		if currentLexeme(parser).Type == lexer.LT_LITERAL_NUMBER {
-			expr := expression(parser)
-			expressions = append(expressions, expr)
-			continue
-		} else {
-			next(parser)
-		}
+// 		if currentLexeme(parser).Type == lexer.LT_LITERAL_NUMBER {
+// 			expr := expression(parser)
+// 			expressions = append(expressions, expr)
+// 			continue
+// 		} else {
+// 			next(parser)
+// 		}
 
-		expr := expression(parser)
-		expressions = append(expressions, expr)
+// 		expr := expression(parser)
+// 		expressions = append(expressions, expr)
 
-		continue
-	}
+// 		continue
+// 	}
 
-	return expressions
-}
+// 	return expressions
+// }
 
-func StartNew(parser *Parser) *AST_Program {
+func Start(parser *Parser) *AST_Program {
 
 	program := program(parser)
 
@@ -378,7 +398,7 @@ func statement(parser *Parser) *AST_Statement {
 		// variableType := prev(parser)
 
 		if accept(parser, lexer.LT_MACRO) {
-			// Is macro
+			// TODO Is macro
 		}
 
 		// Declare variable type here to be used later
@@ -554,7 +574,7 @@ func compareOR(parser *Parser) *AST_Expression {
 		//TODO remove this
 		next(parser)
 		rhs := compareAND(parser)
-		lhs = expressionBinary(lhs, operator, rhs)
+		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
 
 	return lhs
@@ -584,7 +604,7 @@ func compareAND(parser *Parser) *AST_Expression {
 
 		next(parser)
 		rhs := compareNEQEQ(parser)
-		lhs = expressionBinary(lhs, operator, rhs)
+		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
 
 	return lhs
@@ -612,7 +632,7 @@ func compareNEQEQ(parser *Parser) *AST_Expression {
 
 		next(parser)
 		rhs := compareLEQGEQLTGT(parser)
-		lhs = expressionBinary(lhs, operator, rhs)
+		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
 
 	return lhs
@@ -642,7 +662,7 @@ func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
 
 		next(parser)
 		rhs := term(parser)
-		lhs = expressionBinary(lhs, operator, rhs)
+		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
 
 	return lhs
@@ -667,10 +687,10 @@ func term(parser *Parser) *AST_Expression {
 
 	for condition() {
 		operator := currentLexeme(parser).Type
-		// fmt.Println(operator)
+
 		next(parser)
 		rhs := factor(parser)
-		lhs = expressionBinary(lhs, operator, rhs)
+		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
 
 	return lhs
@@ -698,7 +718,7 @@ func factor(parser *Parser) *AST_Expression {
 		//fmt.Println(operator)
 		next(parser)
 		rhs := unary(parser)
-		lhs = expressionBinary(lhs, operator, rhs)
+		lhs = createExpressionBinaryNode(lhs, operator, rhs)
 	}
 
 	return lhs
@@ -710,10 +730,10 @@ func unary(parser *Parser) *AST_Expression {
 
 	if currentLexeme(parser).Type == lexer.LT_BANG || currentLexeme(parser).Type == lexer.LT_MINUS {
 		operator := currentLexeme(parser).Type
-		//fmt.Println(operator)
+
 		next(parser)
 		rhs := unary(parser)
-		return expressionUnary(operator, rhs)
+		return createExpressionUnaryNode(operator, rhs)
 	}
 
 	rhs := primary(parser)
@@ -732,33 +752,37 @@ func primary(parser *Parser) *AST_Expression {
 		rhs := currentLexeme(parser).Label
 		fmt.Println(rhs)
 
-		expr := expressionLiteral(rhs)
+		expr := createExpressionLiteralNode(rhs)
 		return expr
 	} else if c == lexer.LT_IDENTIFIER {
 		name := currentLexeme(parser).Label
+
+		expressions := make([]*AST_Expression, 0)
 
 		if accept(parser, lexer.LT_LPAREN) {
 			for {
 				if accept(parser, lexer.LT_RPAREN) {
 					break
 				}
-				expect(parser, lexer.LT_IDENTIFIER)
+				expressions = append(expressions, expression(parser))
+
 				accept(parser, lexer.LT_COMMA)
 			}
 
-			// TODO return function call expression here
+			expr := createExpressionFunctionCallNode(name, expressions)
+
+			return expr
 		}
 
-		expr := expressionLiteral(name)
+		expr := createExpressionLiteralNode(name)
 		return expr
 	} else if accept(parser, lexer.LT_LPAREN) {
 		expr := expression(parser)
 
-		expr = expressionGroup(expr)
+		expr = createExpressionGroupNode(expr)
 
 		expect(parser, lexer.LT_RPAREN)
 
-		//TODO: Check if current symbol is )
 		//fmt.Printf("After group, current lexeme: %s\n", currentLexeme(parser).Label)
 		return expr
 	} else {

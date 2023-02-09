@@ -31,7 +31,7 @@ func main() {
 		}
 
 		mainParser := parser.Create(mainLexer)
-		program := parser.StartNew(&mainParser)
+		program := parser.Start(&mainParser)
 
 		fmt.Println(len(program.Statements))
 
