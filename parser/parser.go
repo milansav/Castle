@@ -321,29 +321,6 @@ func Create(lexer lexer.Lexer) Parser {
 	return Parser{lexemes: lexer.Lexemes, currentLexeme: lexer.Lexemes[0], currentSym: lexer.Lexemes[0].Type}
 }
 
-// func StartExpressionParser(parser *Parser) []*AST_Expression {
-
-// 	expressions := make([]*AST_Expression, 0)
-
-// 	for hasNext(parser) {
-
-// 		if currentLexeme(parser).Type == lexer.LT_LITERAL_NUMBER {
-// 			expr := expression(parser)
-// 			expressions = append(expressions, expr)
-// 			continue
-// 		} else {
-// 			next(parser)
-// 		}
-
-// 		expr := expression(parser)
-// 		expressions = append(expressions, expr)
-
-// 		continue
-// 	}
-
-// 	return expressions
-// }
-
 func Start(parser *Parser) *AST_Program {
 
 	program := program(parser)
