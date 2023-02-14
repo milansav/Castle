@@ -432,7 +432,7 @@ func statement(parser *Parser) *AST_Statement {
 					return currentStatement
 				} else {
 
-					fmt.Println("Declaration")
+					// fmt.Println("Declaration")
 
 					expr := expression(parser)
 
@@ -646,13 +646,13 @@ func primary(parser *Parser) *AST_Expression {
 
 	// fmt.Println("Primary")
 
-	c := curr(parser).Type
+	// c := curr(parser).Type
 
-	fmt.Println(lexer.LexemeTypeLabels[c])
+	// fmt.Println(lexer.LexemeTypeLabels[c])
 
 	if accept(parser, lexer.LT_LITERAL_NUMBER) || accept(parser, lexer.LT_LITERAL_FLOAT) || accept(parser, lexer.LT_LITERAL_STRING) || accept(parser, lexer.LT_LITERAL_BOOL) {
 		rhs := prev(parser).Label
-		fmt.Println(rhs)
+		// fmt.Println(rhs)
 
 		expr := createExpressionLiteralNode(rhs)
 		return expr
