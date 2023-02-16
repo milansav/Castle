@@ -34,14 +34,9 @@ func main() {
 		mainParser := parser.Create(mainLexer)
 		program := parser.Start(&mainParser)
 
-		mainCodegen := codegen.Create()
-		codegen.Start(mainCodegen)
+		mainCodegen := codegen.Create(program)
+		codegen.Start(&mainCodegen)
 
 		fmt.Println(len(program.Statements))
-
-		//fmt.Println(string(contents))
-		//for _, value := range result {
-		//	parser.PrintTree(value, 0)
-		//}
 	}
 }
