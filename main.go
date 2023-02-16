@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/milansav/Castle/astPrinter"
 	"github.com/milansav/Castle/cli"
+	"github.com/milansav/Castle/codegen"
 	"github.com/milansav/Castle/lexer"
 	"github.com/milansav/Castle/parser"
 )
@@ -34,8 +34,8 @@ func main() {
 		mainParser := parser.Create(mainLexer)
 		program := parser.Start(&mainParser)
 
-		mainPrinter := astPrinter.Create()
-		astPrinter.Start(mainPrinter)
+		mainCodegen := codegen.Create()
+		codegen.Start(mainCodegen)
 
 		fmt.Println(len(program.Statements))
 
