@@ -176,12 +176,8 @@ func PrintExpression(printer *ASTPrinter, expression *parser.AST_Expression) {
 	case parser.ET_EXPRESSION_ARRAY:
 		Group(printer, "Expressions")
 		printer.indentation++
-		if expression.Lhs != nil {
-			PrintExpression(printer, expression.Lhs)
-		}
-		if expression.RhsExpression != nil {
-			PrintExpression(printer, expression.RhsExpression)
-		}
+		PrintExpression(printer, expression.Lhs)
+		PrintExpression(printer, expression.RhsExpression)
 		printer.indentation--
 	}
 }
