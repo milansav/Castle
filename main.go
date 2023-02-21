@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/milansav/Castle/astprinter"
 	"github.com/milansav/Castle/cli"
 	"github.com/milansav/Castle/codegen"
 	"github.com/milansav/Castle/lexer"
@@ -38,5 +39,7 @@ func main() {
 		codegen.Start(&mainCodegen)
 
 		fmt.Println(len(program.Statements))
+
+		astprinter.PrintAST(program)
 	}
 }

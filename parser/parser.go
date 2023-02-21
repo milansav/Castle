@@ -108,6 +108,15 @@ const (
 	ET_FUNCTION_CALL
 )
 
+var ExpressionTypeLabels = map[ExpressionType]string{
+	ET_BINARY:           "ET_BINARY",
+	ET_UNARY:            "ET_UNARY",
+	ET_LITERAL:          "ET_LITERAL",
+	ET_GROUP:            "ET_GROUP",
+	ET_EXPRESSION_ARRAY: "ET_EXPRESSION_ARRAY",
+	ET_FUNCTION_CALL:    "ET_FUNCTION_CALL",
+}
+
 const (
 	ST_STATEMENT_ARRAY StatementType = iota
 	ST_STATEMENT
@@ -117,6 +126,16 @@ const (
 	ST_STRUCT
 	ST_IF
 )
+
+var StatementTypeLabels = map[StatementType]string{
+	ST_STATEMENT_ARRAY: "ST_STATEMENT_ARRAY",
+	ST_STATEMENT:       "ST_STATEMENT",
+	ST_EXPRESSION:      "ST_EXPRESSION",
+	ST_FUNCTION:        "ST_FUNCTION",
+	ST_DECLARATION:     "ST_DECLARATION",
+	ST_STRUCT:          "ST_STRUCT",
+	ST_IF:              "ST_IF",
+}
 
 type AST_Expression struct {
 	EType         ExpressionType
@@ -129,8 +148,8 @@ type AST_Expression struct {
 }
 
 type AST_FunctionCall struct {
-	name   string
-	params []*AST_Expression
+	Name   string
+	Params []*AST_Expression
 }
 
 type AST_If struct {
@@ -262,8 +281,8 @@ func createExpressionFunctionCallNode(name string, params []*AST_Expression) *AS
 	expr := &AST_Expression{
 		EType: ET_FUNCTION_CALL,
 		FunctionCall: &AST_FunctionCall{
-			name:   name,
-			params: params,
+			Name:   name,
+			Params: params,
 		},
 	}
 
@@ -531,6 +550,11 @@ func expression(parser *Parser) *AST_Expression {
 	return lhs
 }
 
+// Same effect as calling compareOR, prevents catching LT_COMMA inside arguments etc..
+func safeExpression(parser *Parser) *AST_Expression {
+	return compareOR(parser)
+}
+
 func compareOR(parser *Parser) *AST_Expression {
 
 	// fmt.Println("compareOR")
@@ -666,7 +690,7 @@ func primary(parser *Parser) *AST_Expression {
 				if accept(parser, lexer.LT_RPAREN) {
 					break
 				}
-				expressions = append(expressions, expression(parser))
+				expressions = append(expressions, safeExpression(parser))
 
 				accept(parser, lexer.LT_COMMA)
 			}
