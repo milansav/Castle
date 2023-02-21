@@ -173,5 +173,15 @@ func PrintExpression(printer *ASTPrinter, expression *parser.AST_Expression) {
 			printer.indentation--
 		}
 		printer.indentation--
+	case parser.ET_EXPRESSION_ARRAY:
+		Group(printer, "Expressions")
+		printer.indentation++
+		if expression.Lhs != nil {
+			PrintExpression(printer, expression.Lhs)
+		}
+		if expression.RhsExpression != nil {
+			PrintExpression(printer, expression.RhsExpression)
+		}
+		printer.indentation--
 	}
 }
