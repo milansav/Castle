@@ -73,10 +73,10 @@ func PrintStatement(printer *ASTPrinter, statement *parser.AST_Statement) {
 	case parser.ST_STATEMENT:
 		Group(printer, "Statement")
 	case parser.ST_EXPRESSION:
-		Group(printer, "Expression")
-		printer.indentation++
+		// Group(printer, "Expression")
+		// printer.indentation++
 		PrintExpression(printer, statement.Expression)
-		printer.indentation--
+		// printer.indentation--
 	case parser.ST_FUNCTION:
 		Group(printer, "Function")
 
@@ -147,6 +147,34 @@ func PrintExpression(printer *ASTPrinter, expression *parser.AST_Expression) {
 			Group(printer, "MULTIPLY")
 		case lexer.LT_DIVIDE:
 			Group(printer, "DIVIDE")
+		case lexer.LT_MODULO:
+			Group(printer, "MODULO")
+		case lexer.LT_POWER:
+			Group(printer, "POWER")
+		case lexer.LT_EQ:
+			Group(printer, "EQUALS")
+		case lexer.LT_NEQ:
+			Group(printer, "NOT EQUALS")
+		case lexer.LT_GEQ:
+			Group(printer, "GREATER EQUAL")
+		case lexer.LT_LEQ:
+			Group(printer, "LESS EQUAL")
+		case lexer.LT_AND:
+			Group(printer, "AND")
+		case lexer.LT_OR:
+			Group(printer, "OR")
+		case lexer.LT_NAND:
+			Group(printer, "NAND")
+		case lexer.LT_NOR:
+			Group(printer, "NOR")
+		case lexer.LT_XAND:
+			Group(printer, "XAND")
+		case lexer.LT_XOR:
+			Group(printer, "XOR")
+		case lexer.LT_XNAND:
+			Group(printer, "XNAND")
+		case lexer.LT_XNOR:
+			Group(printer, "XNOR")
 		default:
 			Group(printer, "UNKNOWN")
 		}
