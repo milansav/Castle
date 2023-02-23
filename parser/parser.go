@@ -32,12 +32,15 @@ func curr(parser *Parser) lexer.Lexeme {
 	return parser.currentLexeme
 }
 
+// Good luck
 func prev(parser *Parser) lexer.Lexeme {
-	if parser.currentStep-1 > 0 {
-		return parser.lexemes[parser.currentStep-1]
-	}
+	// if parser.currentStep-1 > 0 {
+	// 	return parser.lexemes[parser.currentStep-1]
+	// }
 
-	return lexer.Lexeme{Type: lexer.LT_NONE}
+	// return lexer.Lexeme{Type: lexer.LT_NONE}
+
+	return parser.lexemes[parser.currentStep-1]
 
 }
 
@@ -103,6 +106,7 @@ const (
 	ET_BINARY ExpressionType = iota
 	ET_UNARY
 	ET_LITERAL
+	ET_IDENTIFIER
 	ET_GROUP
 	ET_EXPRESSION_ARRAY
 	ET_FUNCTION_CALL
@@ -113,6 +117,7 @@ var ExpressionTypeLabels = map[ExpressionType]string{
 	ET_BINARY:           "ET_BINARY",
 	ET_UNARY:            "ET_UNARY",
 	ET_LITERAL:          "ET_LITERAL",
+	ET_IDENTIFIER:       "ET_IDENTIFIER",
 	ET_GROUP:            "ET_GROUP",
 	ET_EXPRESSION_ARRAY: "ET_EXPRESSION_ARRAY",
 	ET_FUNCTION_CALL:    "ET_FUNCTION_CALL",
@@ -142,14 +147,12 @@ var StatementTypeLabels = map[StatementType]string{
 }
 
 type AST_Expression struct {
-	EType         ExpressionType
-	Lhs           *AST_Expression
-	Operator      lexer.LexemeType
-	Rhs           *AST_Expression
-	Value         string
-	RhsExpression *AST_Expression
-	FunctionCall  *AST_FunctionCall
-	Member        *AST_Expression
+	EType        ExpressionType
+	Lhs          *AST_Expression
+	Operator     lexer.LexemeType
+	Value        string
+	FunctionCall *AST_FunctionCall
+	Rhs          *AST_Expression
 }
 
 type AST_FunctionCall struct {
@@ -217,6 +220,15 @@ func createProgramNode() *AST_Program {
 func createExpressionLiteralNode(value string) *AST_Expression {
 	expr := &AST_Expression{
 		EType: ET_LITERAL,
+		Value: value,
+	}
+
+	return expr
+}
+
+func createExpressionIdentifierNode(value string) *AST_Expression {
+	expr := &AST_Expression{
+		EType: ET_IDENTIFIER,
 		Value: value,
 	}
 
@@ -296,9 +308,9 @@ func createExpressionFunctionCallNode(name string, params []*AST_Expression) *AS
 
 func createExpressionMemberAccessNode(lhs *AST_Expression, member *AST_Expression) *AST_Expression {
 	expr := &AST_Expression{
-		EType:  ET_MEMBER_ACCESS,
-		Lhs:    lhs,
-		Member: member,
+		EType: ET_MEMBER_ACCESS,
+		Lhs:   lhs,
+		Rhs:   member,
 	}
 
 	return expr
@@ -502,9 +514,9 @@ func expression(parser *Parser) *AST_Expression {
 
 	if accept(parser, lexer.LT_COMMA) {
 		expression := &AST_Expression{
-			EType:         ET_EXPRESSION_ARRAY,
-			Lhs:           lhs,
-			RhsExpression: expression(parser),
+			EType: ET_EXPRESSION_ARRAY,
+			Lhs:   lhs,
+			Rhs:   expression(parser),
 		}
 
 		return expression
@@ -618,12 +630,32 @@ func unary(parser *Parser) *AST_Expression {
 // memberAccess -> primary ((LT_PERIOD primary)*)
 func memberAccess(parser *Parser) *AST_Expression {
 	lhs := primary(parser)
+	root := lhs
+
+	fmt.Println(root)
+
+	if curr(parser).Type == lexer.LT_PERIOD {
+		lhs.EType = ET_MEMBER_ACCESS
+	}
 
 	for {
 		if accept(parser, lexer.LT_PERIOD) {
 			member := primary(parser)
 
-			lhs = createExpressionMemberAccessNode(lhs, member)
+			/*
+				Root
+				Lhs(member access)    Rhs
+				                      Lhs(member access)		Rhs
+
+			*/
+
+			lhs.Rhs = &AST_Expression{
+				EType: ET_MEMBER_ACCESS,
+				Lhs:   member,
+				Rhs:   nil,
+			}
+
+			lhs = lhs.Rhs
 
 			continue
 		}
@@ -631,10 +663,12 @@ func memberAccess(parser *Parser) *AST_Expression {
 		break
 	}
 
-	return lhs
+	return root
 }
 
 func primary(parser *Parser) *AST_Expression {
+
+	fmt.Println(curr(parser))
 
 	if accept(parser, lexer.LT_LITERAL_NUMBER) || accept(parser, lexer.LT_LITERAL_FLOAT) || accept(parser, lexer.LT_LITERAL_STRING) || accept(parser, lexer.LT_LITERAL_BOOL) {
 		rhs := prev(parser).Label
@@ -643,6 +677,10 @@ func primary(parser *Parser) *AST_Expression {
 		return expr
 	} else if accept(parser, lexer.LT_IDENTIFIER) {
 		name := prev(parser).Label
+
+		fmt.Println(prev(parser))
+
+		fmt.Println(name)
 
 		expressions := make([]*AST_Expression, 0)
 
@@ -661,8 +699,10 @@ func primary(parser *Parser) *AST_Expression {
 			return expr
 		}
 
-		expr := createExpressionLiteralNode(name)
+		expr := createExpressionIdentifierNode(name)
 		return expr
+
+		//TODO: Move this after unary and before member access
 	} else if accept(parser, lexer.LT_LPAREN) {
 		expr := expression(parser)
 
