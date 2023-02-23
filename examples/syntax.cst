@@ -11,7 +11,7 @@ const myFunction = (a) => {
 //function with more statements
 const myFunction = (a, b) => {
     const c = a + b;
-}
+};
 
 const a = 0;
 
