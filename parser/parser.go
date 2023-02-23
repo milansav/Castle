@@ -291,52 +291,6 @@ func createExpressionFunctionCallNode(name string, params []*AST_Expression) *AS
 	return expr
 }
 
-// TODO create dedicated AST printer
-func PrintTree(tree *AST_Expression, depth int) {
-
-	prefixChar := "≫ "
-	prefix := ""
-
-	log := func(_prefix string, field string) {
-		fmt.Printf("%s%s[ %s ]%s\n", _prefix, util.Yellow, field, util.Reset)
-	}
-
-	for i := 0; i < depth; i++ {
-		prefix += prefixChar
-	}
-
-	if tree.EType == ET_GROUP {
-		log(prefix, "GROUP")
-
-		//log(prefix, "LHS")
-
-		PrintTree(tree.Lhs, depth+1)
-	} else if tree.EType == ET_BINARY {
-
-		switch tree.Operator {
-		case lexer.LT_PLUS:
-			log(prefix, "ADD")
-		case lexer.LT_MINUS:
-			log(prefix, "SUBTRACT")
-		case lexer.LT_MULTIPLY:
-			log(prefix, "MULTIPLY")
-		case lexer.LT_DIVIDE:
-			log(prefix, "DIVIDE")
-		}
-
-		//log(prefix, "LHS")
-
-		PrintTree(tree.Lhs, depth+1)
-
-		//log(prefix, "RHS")
-
-		PrintTree(tree.Rhs, depth+1)
-	} else if tree.EType == ET_LITERAL {
-		log(prefix, "VALUE")
-		fmt.Println(prefix + prefixChar + tree.Value)
-	}
-}
-
 func Create(lexer lexer.Lexer) Parser {
 	return Parser{lexemes: lexer.Lexemes, currentLexeme: lexer.Lexemes[0], currentSym: lexer.Lexemes[0].Type}
 }
@@ -366,9 +320,6 @@ func program(parser *Parser) *AST_Program {
 	program := createProgramNode()
 
 	for hasNext(parser) {
-
-		// fmt.Print("Current token: ")
-		// fmt.Println(lexer.LexemeTypeLabels[parser.currentLexeme.Type])
 
 		sttmnt := statement(parser)
 
@@ -453,8 +404,6 @@ func statement(parser *Parser) *AST_Statement {
 					return currentStatement
 				} else {
 
-					// fmt.Println("Declaration")
-
 					expr := expression(parser)
 
 					decl := createDeclarationNode(identifier.Label, expr)
@@ -536,8 +485,6 @@ primary -> LT_NUMBER | LT_FLOAT | LT_LPAREN expression LT_RPAREN | LT_IDENTIFIER
 
 func expression(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Expression")
-
 	lhs := compareOR(parser)
 
 	if accept(parser, lexer.LT_COMMA) {
@@ -560,8 +507,6 @@ func safeExpression(parser *Parser) *AST_Expression {
 
 func compareOR(parser *Parser) *AST_Expression {
 
-	// fmt.Println("compareOR")
-
 	lhs := compareAND(parser)
 
 	for accept(parser, lexer.LT_OR) || accept(parser, lexer.LT_NOR) || accept(parser, lexer.LT_XOR) || accept(parser, lexer.LT_XNOR) {
@@ -575,8 +520,6 @@ func compareOR(parser *Parser) *AST_Expression {
 }
 
 func compareAND(parser *Parser) *AST_Expression {
-
-	// fmt.Println("compareAND")
 
 	lhs := compareNEQEQ(parser)
 
@@ -592,8 +535,6 @@ func compareAND(parser *Parser) *AST_Expression {
 
 func compareNEQEQ(parser *Parser) *AST_Expression {
 
-	// fmt.Println("compareNEQEQ")
-
 	lhs := compareLEQGEQLTGT(parser)
 
 	for accept(parser, lexer.LT_NEQ) || accept(parser, lexer.LT_EQ) {
@@ -607,8 +548,6 @@ func compareNEQEQ(parser *Parser) *AST_Expression {
 }
 
 func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
-
-	// fmt.Println("compareLEQGEQLTGT")
 
 	lhs := term(parser)
 
@@ -624,8 +563,6 @@ func compareLEQGEQLTGT(parser *Parser) *AST_Expression {
 
 func term(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Term")
-
 	lhs := factor(parser)
 
 	for accept(parser, lexer.LT_MINUS) || accept(parser, lexer.LT_PLUS) {
@@ -639,8 +576,6 @@ func term(parser *Parser) *AST_Expression {
 }
 
 func factor(parser *Parser) *AST_Expression {
-
-	// fmt.Println("Factor")
 
 	lhs := unary(parser)
 
@@ -656,8 +591,6 @@ func factor(parser *Parser) *AST_Expression {
 
 func unary(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Unary")
-
 	if accept(parser, lexer.LT_BANG) || accept(parser, lexer.LT_MINUS) {
 		operator := prev(parser).Type
 
@@ -671,15 +604,8 @@ func unary(parser *Parser) *AST_Expression {
 
 func primary(parser *Parser) *AST_Expression {
 
-	// fmt.Println("Primary")
-
-	// c := curr(parser).Type
-
-	// fmt.Println(lexer.LexemeTypeLabels[c])
-
 	if accept(parser, lexer.LT_LITERAL_NUMBER) || accept(parser, lexer.LT_LITERAL_FLOAT) || accept(parser, lexer.LT_LITERAL_STRING) || accept(parser, lexer.LT_LITERAL_BOOL) {
 		rhs := prev(parser).Label
-		// fmt.Println(rhs)
 
 		expr := createExpressionLiteralNode(rhs)
 		return expr
