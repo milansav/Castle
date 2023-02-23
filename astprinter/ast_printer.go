@@ -95,6 +95,12 @@ func PrintStatement(printer *ASTPrinter, statement *parser.AST_Statement) {
 		Group(printer, "Struct")
 	case parser.ST_IF:
 		Group(printer, "If")
+	case parser.ST_RETURN:
+		Group(printer, "Return")
+		Info(printer, "Value")
+		printer.indentation++
+		PrintExpression(printer, statement.Expression)
+		printer.indentation--
 	}
 }
 

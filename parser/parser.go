@@ -125,6 +125,7 @@ const (
 	ST_DECLARATION
 	ST_STRUCT
 	ST_IF
+	ST_RETURN
 )
 
 var StatementTypeLabels = map[StatementType]string{
@@ -135,6 +136,7 @@ var StatementTypeLabels = map[StatementType]string{
 	ST_DECLARATION:     "ST_DECLARATION",
 	ST_STRUCT:          "ST_STRUCT",
 	ST_IF:              "ST_IF",
+	ST_RETURN:          "ST_RETURN",
 }
 
 type AST_Expression struct {
@@ -494,8 +496,9 @@ func statement(parser *Parser) *AST_Statement {
 		return currentStatement
 
 	} else if accept(parser, lexer.LT_RETURN) { // RETURN
-		currentStatement.SType = ST_EXPRESSION
+		currentStatement.SType = ST_RETURN
 		currentStatement.Expression = expression(parser)
+		expect(parser, lexer.LT_SEMICOLON)
 
 		return currentStatement
 	} else {
