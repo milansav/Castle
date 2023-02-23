@@ -106,6 +106,7 @@ const (
 	ET_GROUP
 	ET_EXPRESSION_ARRAY
 	ET_FUNCTION_CALL
+	ET_MEMBER_ACCESS
 )
 
 var ExpressionTypeLabels = map[ExpressionType]string{
@@ -115,6 +116,7 @@ var ExpressionTypeLabels = map[ExpressionType]string{
 	ET_GROUP:            "ET_GROUP",
 	ET_EXPRESSION_ARRAY: "ET_EXPRESSION_ARRAY",
 	ET_FUNCTION_CALL:    "ET_FUNCTION_CALL",
+	ET_MEMBER_ACCESS:    "ET_MEMBER_ACCESS",
 }
 
 const (
@@ -147,6 +149,7 @@ type AST_Expression struct {
 	Value         string
 	RhsExpression *AST_Expression
 	FunctionCall  *AST_FunctionCall
+	Member        *AST_Expression
 }
 
 type AST_FunctionCall struct {
@@ -286,6 +289,16 @@ func createExpressionFunctionCallNode(name string, params []*AST_Expression) *AS
 			Name:   name,
 			Params: params,
 		},
+	}
+
+	return expr
+}
+
+func createExpressionMemberAccessNode(lhs *AST_Expression, member *AST_Expression) *AST_Expression {
+	expr := &AST_Expression{
+		EType:  ET_MEMBER_ACCESS,
+		Lhs:    lhs,
+		Member: member,
 	}
 
 	return expr
@@ -598,8 +611,27 @@ func unary(parser *Parser) *AST_Expression {
 		return createExpressionUnaryNode(operator, rhs)
 	}
 
-	rhs := primary(parser)
+	rhs := memberAccess(parser)
 	return rhs
+}
+
+// memberAccess -> primary ((LT_PERIOD primary)*)
+func memberAccess(parser *Parser) *AST_Expression {
+	lhs := primary(parser)
+
+	for {
+		if accept(parser, lexer.LT_PERIOD) {
+			member := primary(parser)
+
+			lhs = createExpressionMemberAccessNode(lhs, member)
+
+			continue
+		}
+
+		break
+	}
+
+	return lhs
 }
 
 func primary(parser *Parser) *AST_Expression {
