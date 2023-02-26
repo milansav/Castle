@@ -213,17 +213,5 @@ func PrintExpression(printer *ASTPrinter, expression *parser.AST_Expression) {
 		PrintExpression(printer, expression.Lhs)
 		PrintExpression(printer, expression.Rhs)
 		printer.indentation--
-	case parser.ET_MEMBER_ACCESS:
-		Group(printer, "Member Access")
-		Value(printer, "Name", expression.Value)
-
-		// PrintExpression(printer, expression.Rhs)
-
-		fmt.Println(expression)
-		fmt.Println(expression.Rhs)
-		fmt.Println(expression.Rhs.Lhs)
-		fmt.Println(expression.Rhs.Rhs)
-		fmt.Println(expression.Rhs.Rhs.Lhs)
-		fmt.Println(expression.Rhs.Rhs.Lhs.FunctionCall)
 	}
 }
