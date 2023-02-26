@@ -95,6 +95,15 @@ func PrintStatement(printer *ASTPrinter, statement *parser.AST_Statement) {
 		Group(printer, "Struct")
 	case parser.ST_IF:
 		Group(printer, "If")
+		Info(printer, "Body")
+
+		printer.indentation++
+
+		for _, value := range statement.If.Statements {
+			PrintStatement(printer, value)
+		}
+
+		printer.indentation--
 	case parser.ST_RETURN:
 		Group(printer, "Return")
 		Info(printer, "Value")
@@ -194,6 +203,9 @@ func PrintExpression(printer *ASTPrinter, expression *parser.AST_Expression) {
 	case parser.ET_LITERAL:
 		Group(printer, "Literal")
 		Value(printer, "Value", expression.Value)
+	case parser.ET_IDENTIFIER:
+		Group(printer, "Identifier")
+		Value(printer, "Name", expression.Value)
 	case parser.ET_FUNCTION_CALL:
 		Group(printer, "Call")
 		Value(printer, "Name", expression.FunctionCall.Name)
