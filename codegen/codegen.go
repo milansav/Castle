@@ -7,13 +7,18 @@ import (
 )
 
 type Codegen struct {
-	Program *parser.AST_Program
+	Program   *parser.AST_Program
+	OutBuffer string
 }
 
 func Create(program *parser.AST_Program) Codegen {
 	return Codegen{
 		Program: program,
 	}
+}
+
+func (c Codegen) Out(text string) {
+	c.OutBuffer += text
 }
 
 func Start(codegen *Codegen) {

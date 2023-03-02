@@ -24,21 +24,29 @@ func Prefix(printer *ASTPrinter) string {
 	return prefix
 }
 
-func Group(printer *ASTPrinter, name string) {
+func (printer *ASTPrinter) Group(name string) {
 	fmt.Printf("%s%s[ %s ]%s\n", Prefix(printer), util.Yellow, name, util.Reset)
 }
 
-func Value(printer *ASTPrinter, name string, value string) {
-	printer.indentation++
+func (printer *ASTPrinter) Value(name string, value string) {
+	printer.In()
 	fmt.Printf("%s- %s%s: %s%s\n", Prefix(printer), util.Yellow, name, util.Reset, value)
-	printer.indentation--
+	printer.Out()
 }
 
-func Info(printer *ASTPrinter, description string) {
-	printer.indentation++
+func (printer *ASTPrinter) Info(description string) {
+	printer.In()
 	fmt.Printf("%s- %s%s%s\n", Prefix(printer), util.Yellow, description, util.Reset)
-	printer.indentation--
+	printer.Out()
 
+}
+
+func (printer *ASTPrinter) In() {
+	printer.indentation++
+}
+
+func (printer *ASTPrinter) Out() {
+	printer.indentation--
 }
 
 func PrintAST(program *parser.AST_Program) {
@@ -46,184 +54,184 @@ func PrintAST(program *parser.AST_Program) {
 		indentation: 0,
 	}
 
-	Group(printer, "Program")
-	printer.indentation++
+	printer.Group("Program")
+	printer.In()
 
 	for _, value := range program.Statements {
-		PrintStatement(printer, value)
+		printer.PrintStatement(value)
 	}
 
-	printer.indentation--
+	printer.Out()
 }
 
-func PrintStatement(printer *ASTPrinter, statement *parser.AST_Statement) {
+func (printer *ASTPrinter) PrintStatement(statement *parser.AST_Statement) {
 	// Group(printer, "Statement")
 	// Value(printer, "type", parser.StatementTypeLabels[statement.SType])
 
 	switch statement.SType {
 	case parser.ST_STATEMENT_ARRAY:
 		// Group(printer, "Block")
-		printer.indentation++
+		printer.In()
 
 		for _, value := range statement.Statements {
-			PrintStatement(printer, value)
+			printer.PrintStatement(value)
 		}
 
-		printer.indentation--
+		printer.Out()
 	case parser.ST_STATEMENT:
-		Group(printer, "Statement")
+		printer.Group("Statement")
 	case parser.ST_EXPRESSION:
 		// Group(printer, "Expression")
 		// printer.indentation++
-		PrintExpression(printer, statement.Expression)
+		printer.PrintExpression(statement.Expression)
 		// printer.indentation--
 	case parser.ST_FUNCTION:
-		Group(printer, "Function")
+		printer.Group("Function")
 
-		printer.indentation++
+		printer.In()
 
-		PrintFunction(printer, statement.Function)
+		printer.PrintFunction(statement.Function)
 
-		printer.indentation--
+		printer.Out()
 
 	case parser.ST_DECLARATION:
-		Group(printer, "Declaration")
-		printer.indentation++
+		printer.Group("Declaration")
+		printer.In()
 		PrintDeclaration(printer, statement.Declaration)
-		printer.indentation--
+		printer.Out()
 	case parser.ST_STRUCT:
-		Group(printer, "Struct")
+		printer.Group("Struct")
 	case parser.ST_IF:
-		Group(printer, "If")
-		Info(printer, "Body")
+		printer.Group("If")
+		printer.Info("Body")
 
-		printer.indentation++
+		printer.In()
 
 		for _, value := range statement.If.Statements {
-			PrintStatement(printer, value)
+			printer.PrintStatement(value)
 		}
 
-		printer.indentation--
+		printer.Out()
 	case parser.ST_RETURN:
-		Group(printer, "Return")
-		Info(printer, "Value")
-		printer.indentation++
-		PrintExpression(printer, statement.Expression)
-		printer.indentation--
+		printer.Group("Return")
+		printer.Info("Value")
+		printer.In()
+		printer.PrintExpression(statement.Expression)
+		printer.Out()
 	}
 }
 
-func PrintFunction(printer *ASTPrinter, function *parser.AST_Function) {
-	Value(printer, "Name", function.Name)
-	Info(printer, "Args")
-	printer.indentation++
+func (printer *ASTPrinter) PrintFunction(function *parser.AST_Function) {
+	printer.Value("Name", function.Name)
+	printer.Info("Args")
+	printer.In()
 
 	for _, value := range function.Props {
-		Info(printer, value)
+		printer.Info(value)
 	}
 
-	printer.indentation--
+	printer.Out()
 
-	Info(printer, "Body")
+	printer.Info("Body")
 
-	printer.indentation++
+	printer.In()
 
-	PrintStatement(printer, function.Statement)
+	printer.PrintStatement(function.Statement)
 
-	printer.indentation--
+	printer.Out()
 }
 
 func PrintDeclaration(printer *ASTPrinter, declaration *parser.AST_Declaration) {
-	Value(printer, "Name", declaration.Name)
-	Info(printer, "Value")
+	printer.Value("Name", declaration.Name)
+	printer.Info("Value")
 
-	printer.indentation++
-	PrintExpression(printer, declaration.Value)
-	printer.indentation--
+	printer.In()
+	printer.PrintExpression(declaration.Value)
+	printer.Out()
 
 }
 
-func PrintExpression(printer *ASTPrinter, expression *parser.AST_Expression) {
+func (printer *ASTPrinter) PrintExpression(expression *parser.AST_Expression) {
 	// Group(printer, "Expression")
 
 	switch expression.EType {
 	case parser.ET_GROUP:
-		Group(printer, "Group")
-		printer.indentation++
-		PrintExpression(printer, expression.Lhs)
-		printer.indentation--
+		printer.Group("Group")
+		printer.In()
+		printer.PrintExpression(expression.Lhs)
+		printer.Out()
 	case parser.ET_BINARY:
 		switch expression.Operator {
 		case lexer.LT_PLUS:
-			Group(printer, "ADD")
+			printer.Group("ADD")
 		case lexer.LT_MINUS:
-			Group(printer, "SUBTRACT")
+			printer.Group("SUBTRACT")
 		case lexer.LT_MULTIPLY:
-			Group(printer, "MULTIPLY")
+			printer.Group("MULTIPLY")
 		case lexer.LT_DIVIDE:
-			Group(printer, "DIVIDE")
+			printer.Group("DIVIDE")
 		case lexer.LT_MODULO:
-			Group(printer, "MODULO")
+			printer.Group("MODULO")
 		case lexer.LT_POWER:
-			Group(printer, "POWER")
+			printer.Group("POWER")
 		case lexer.LT_EQ:
-			Group(printer, "EQUALS")
+			printer.Group("EQUALS")
 		case lexer.LT_NEQ:
-			Group(printer, "NOT EQUALS")
+			printer.Group("NOT EQUALS")
 		case lexer.LT_GEQ:
-			Group(printer, "GREATER EQUAL")
+			printer.Group("GREATER EQUAL")
 		case lexer.LT_LEQ:
-			Group(printer, "LESS EQUAL")
+			printer.Group("LESS EQUAL")
 		case lexer.LT_AND:
-			Group(printer, "AND")
+			printer.Group("AND")
 		case lexer.LT_OR:
-			Group(printer, "OR")
+			printer.Group("OR")
 		case lexer.LT_NAND:
-			Group(printer, "NAND")
+			printer.Group("NAND")
 		case lexer.LT_NOR:
-			Group(printer, "NOR")
+			printer.Group("NOR")
 		case lexer.LT_XAND:
-			Group(printer, "XAND")
+			printer.Group("XAND")
 		case lexer.LT_XOR:
-			Group(printer, "XOR")
+			printer.Group("XOR")
 		case lexer.LT_XNAND:
-			Group(printer, "XNAND")
+			printer.Group("XNAND")
 		case lexer.LT_XNOR:
-			Group(printer, "XNOR")
+			printer.Group("XNOR")
 		default:
-			Group(printer, "UNKNOWN")
+			printer.Group("UNKNOWN")
 		}
-		printer.indentation++
-		PrintExpression(printer, expression.Lhs)
-		printer.indentation--
+		printer.In()
+		printer.PrintExpression(expression.Lhs)
+		printer.Out()
 
-		printer.indentation++
-		PrintExpression(printer, expression.Rhs)
-		printer.indentation--
+		printer.In()
+		printer.PrintExpression(expression.Rhs)
+		printer.Out()
 	case parser.ET_LITERAL:
-		Group(printer, "Literal")
-		Value(printer, "Value", expression.Value)
+		printer.Group("Literal")
+		printer.Value("Value", expression.Value)
 	case parser.ET_IDENTIFIER:
-		Group(printer, "Identifier")
-		Value(printer, "Name", expression.Value)
+		printer.Group("Identifier")
+		printer.Value("Name", expression.Value)
 	case parser.ET_FUNCTION_CALL:
-		Group(printer, "Call")
-		Value(printer, "Name", expression.FunctionCall.Name)
+		printer.Group("Call")
+		printer.Value("Name", expression.FunctionCall.Name)
 
-		Info(printer, "Args")
-		printer.indentation++
+		printer.Info("Args")
+		printer.In()
 		for index, value := range expression.FunctionCall.Params {
-			Info(printer, fmt.Sprintf("%d", index))
-			printer.indentation++
-			PrintExpression(printer, value)
-			printer.indentation--
+			printer.Info(fmt.Sprintf("%d", index))
+			printer.In()
+			printer.PrintExpression(value)
+			printer.Out()
 		}
-		printer.indentation--
+		printer.Out()
 	case parser.ET_EXPRESSION_ARRAY:
-		Group(printer, "Expressions")
-		printer.indentation++
-		PrintExpression(printer, expression.Lhs)
-		PrintExpression(printer, expression.Rhs)
-		printer.indentation--
+		printer.Group("Expressions")
+		printer.In()
+		printer.PrintExpression(expression.Lhs)
+		printer.PrintExpression(expression.Rhs)
+		printer.Out()
 	}
 }
