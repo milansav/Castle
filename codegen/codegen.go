@@ -21,7 +21,7 @@ func (c Codegen) Out(text string) {
 	c.OutBuffer += text
 }
 
-func Start(codegen *Codegen) {
+func (codegen *Codegen) Start() {
 	for _, programStatement := range codegen.Program.Statements {
 		fmt.Println(programStatement.SType)
 

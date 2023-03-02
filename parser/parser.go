@@ -320,7 +320,7 @@ func Create(lexer lexer.Lexer) Parser {
 	return Parser{lexemes: lexer.Lexemes, currentLexeme: lexer.Lexemes[0], currentSym: lexer.Lexemes[0].Type}
 }
 
-func Start(parser *Parser) *AST_Program {
+func (parser *Parser) Start() *AST_Program {
 
 	program := program(parser)
 

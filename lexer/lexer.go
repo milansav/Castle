@@ -197,7 +197,7 @@ func Create(source string) Lexer {
 	}
 }
 
-func Start(lexer *Lexer) {
+func (lexer *Lexer) Start() {
 	for canStep(lexer) {
 
 		c := currentRune(lexer)

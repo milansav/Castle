@@ -26,17 +26,17 @@ func main() {
 		fmt.Printf("Loaded file contents: \n%s\n", string(contents))
 
 		mainLexer := lexer.Create(string(contents))
-		lexer.Start(&mainLexer)
+		mainLexer.Start()
 
 		for _, element := range mainLexer.Lexemes {
 			fmt.Printf("Label: %s, Type: %s\n", element.Label, lexer.LexemeTypeLabels[element.Type])
 		}
 
 		mainParser := parser.Create(mainLexer)
-		program := parser.Start(&mainParser)
+		program := mainParser.Start()
 
 		mainCodegen := codegen.Create(program)
-		codegen.Start(&mainCodegen)
+		mainCodegen.Start()
 
 		fmt.Println(len(program.Statements))
 
