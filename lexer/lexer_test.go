@@ -27,7 +27,7 @@ func TestLexerExpression(t *testing.T) {
 	expectedTypes := [12]LexemeType{LT_LITERAL_NUMBER, LT_PLUS, LT_LITERAL_NUMBER, LT_MULTIPLY, LT_LITERAL_NUMBER, LT_DIVIDE, LT_LPAREN, LT_LITERAL_NUMBER, LT_MINUS, LT_LITERAL_NUMBER, LT_RPAREN, LT_END}
 	lexer := Create(input)
 
-	Start(&lexer)
+	lexer.Start()
 
 	if len(lexer.Lexemes) != 12 {
 		t.Errorf("lexer.Start Lexemes size is incorrect. Expected %d got %d", len(expectedTypes), len(lexer.Lexemes))
@@ -49,7 +49,7 @@ func TestLexerBigNumbers(t *testing.T) {
 
 	lexer := Create(input)
 
-	Start(&lexer)
+	lexer.Start()
 
 	if len(lexer.Lexemes) != 2 {
 		t.Errorf("lexer.Start Lexemes size is incorrect. Expected 2 got %d", len(lexer.Lexemes))
