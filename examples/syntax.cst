@@ -12,6 +12,8 @@ const myFunction = (a, b) => {
     const c = a + b;
 };
 
+myFunction(3,2);
+
 const a = 0;
 
 if (3 > 2  or 3 < 4) {
