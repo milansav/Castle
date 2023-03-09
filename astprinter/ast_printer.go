@@ -80,6 +80,11 @@ func (printer *ASTPrinter) PrintStatement(statement *parser.AST_Statement) {
 		printer.Out()
 	case parser.ST_STATEMENT:
 		printer.Group("Statement")
+		printer.In()
+
+		printer.PrintStatement(statement.Statement)
+
+		printer.Out()
 	case parser.ST_EXPRESSION:
 		// Group(printer, "Expression")
 		// printer.indentation++
@@ -210,7 +215,8 @@ func (printer *ASTPrinter) PrintExpression(expression *parser.AST_Expression) {
 		printer.Out()
 	case parser.ET_LITERAL:
 		printer.Group("Literal")
-		printer.Value("Value", expression.Value)
+		printer.Value("Value", expression.Literal.Value)
+		printer.Value("Type", parser.LiteralTypeLabels[expression.Literal.Type])
 	case parser.ET_IDENTIFIER:
 		printer.Group("Identifier")
 		printer.Value("Name", expression.Value)
