@@ -4,9 +4,8 @@ const $$main = (argc, argv) => {
 };
 
 //function with one statement
-const myFunction = (a) => {
+const singleStatement = (a) => 
     myFunction(1+1, "Hello World", identifier);
-};
 
 //function with more statements
 const myFunction = (a, b) => {

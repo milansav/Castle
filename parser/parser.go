@@ -63,14 +63,6 @@ func accept(parser *Parser, symbol lexer.LexemeType) bool {
 	return false
 }
 
-func is(parser *Parser, symbol lexer.LexemeType) bool {
-	if parser.currentSym == symbol {
-		fmt.Printf("Accepted symbol: %s\n", lexer.LexemeTypeLabels[parser.currentSym])
-		return true
-	}
-	return false
-}
-
 func expect(parser *Parser, symbol lexer.LexemeType) bool {
 
 	expectingMessage := fmt.Sprintf(
@@ -101,6 +93,7 @@ func expect(parser *Parser, symbol lexer.LexemeType) bool {
 
 type ExpressionType int
 type StatementType int
+type LiteraltType int
 
 const (
 	ET_BINARY ExpressionType = iota
@@ -146,13 +139,35 @@ var StatementTypeLabels = map[StatementType]string{
 	ST_RETURN:          "ST_RETURN",
 }
 
+const (
+	LT_STRING LiteraltType = iota
+	LT_NUMBER
+	LT_FLOAT
+	LT_BOOL
+	LT_UNDEFINED
+)
+
+var LiteralTypeLabels = map[LiteraltType]string{
+	LT_STRING:    "LT_STRING",
+	LT_NUMBER:    "LT_NUMBER",
+	LT_FLOAT:     "LT_FLOAT",
+	LT_BOOL:      "LT_BOOL",
+	LT_UNDEFINED: "LT_UNDEFINED",
+}
+
 type AST_Expression struct {
 	EType        ExpressionType
 	Lhs          *AST_Expression
 	Operator     lexer.LexemeType
 	Value        string
+	Literal      *AST_Literal
 	FunctionCall *AST_FunctionCall
 	Rhs          *AST_Expression
+}
+
+type AST_Literal struct {
+	Value string
+	Type  LiteraltType
 }
 
 type AST_FunctionCall struct {
@@ -218,9 +233,13 @@ func createProgramNode() *AST_Program {
 }
 
 func createExpressionLiteralNode(value string) *AST_Expression {
-	expr := &AST_Expression{
-		EType: ET_LITERAL,
+	literal := &AST_Literal{
 		Value: value,
+		Type:  LT_UNDEFINED,
+	}
+	expr := &AST_Expression{
+		EType:   ET_LITERAL,
+		Literal: literal,
 	}
 
 	return expr
@@ -242,6 +261,7 @@ func createExpressionUnaryNode(operator lexer.LexemeType, rhs *AST_Expression) *
 		Operator: rhs.Operator,
 		Rhs:      rhs.Rhs,
 		Value:    rhs.Value,
+		Literal:  rhs.Literal,
 	}
 
 	expr := &AST_Expression{
@@ -260,6 +280,7 @@ func createExpressionBinaryNode(lhs *AST_Expression, operator lexer.LexemeType, 
 		Operator: lhs.Operator,
 		Rhs:      lhs.Rhs,
 		Value:    lhs.Value,
+		Literal:  lhs.Literal,
 	}
 
 	_rhs := &AST_Expression{
@@ -268,6 +289,7 @@ func createExpressionBinaryNode(lhs *AST_Expression, operator lexer.LexemeType, 
 		Operator: rhs.Operator,
 		Rhs:      rhs.Rhs,
 		Value:    rhs.Value,
+		Literal:  rhs.Literal,
 	}
 
 	expr := &AST_Expression{
