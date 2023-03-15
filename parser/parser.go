@@ -440,13 +440,14 @@ func statement(parser *Parser) *AST_Statement {
 
 						}
 
+						expect(parser, lexer.LT_SEMICOLON) // LET / CONST {name} = ((params)) => {statement};
+
 					} else {
 						functionStatements.SType = ST_STATEMENT
 						functionStatements.Statement = statement(parser) // LET / CONST {name} = ((params)) => {statement}
 					}
 
 					currentStatement.Function = createFunctionNode(identifier.Label, params, functionStatements)
-					expect(parser, lexer.LT_SEMICOLON) // LET / CONST {name} = ((params)) => {statement};
 
 					return currentStatement
 				} else {
