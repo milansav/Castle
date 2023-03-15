@@ -140,19 +140,19 @@ var StatementTypeLabels = map[StatementType]string{
 }
 
 const (
-	LT_STRING LiteraltType = iota
-	LT_NUMBER
-	LT_FLOAT
-	LT_BOOL
-	LT_UNDEFINED
+	TYPE_STRING LiteraltType = iota
+	TYPE_NUMBER
+	TYPE_FLOAT
+	TYPE_BOOL
+	TYPE_UNDEFINED
 )
 
 var LiteralTypeLabels = map[LiteraltType]string{
-	LT_STRING:    "LT_STRING",
-	LT_NUMBER:    "LT_NUMBER",
-	LT_FLOAT:     "LT_FLOAT",
-	LT_BOOL:      "LT_BOOL",
-	LT_UNDEFINED: "LT_UNDEFINED",
+	TYPE_STRING:    "TYPE_STRING",
+	TYPE_NUMBER:    "TYPE_NUMBER",
+	TYPE_FLOAT:     "TYPE_FLOAT",
+	TYPE_BOOL:      "TYPE_BOOL",
+	TYPE_UNDEFINED: "TYPE_UNDEFINED",
 }
 
 type AST_Expression struct {
@@ -697,17 +697,17 @@ func primary(parser *Parser) *AST_Expression {
 		rhs := prev(parser).Label
 		prevType := prev(parser).Type
 
-		t := LT_UNDEFINED
+		t := TYPE_UNDEFINED
 
 		switch prevType {
 		case lexer.LT_LITERAL_NUMBER:
-			t = LT_NUMBER
+			t = TYPE_NUMBER
 		case lexer.LT_LITERAL_FLOAT:
-			t = LT_FLOAT
+			t = TYPE_FLOAT
 		case lexer.LT_LITERAL_STRING:
-			t = LT_STRING
+			t = TYPE_STRING
 		case lexer.LT_LITERAL_BOOL:
-			t = LT_BOOL
+			t = TYPE_BOOL
 		}
 
 		expr := createExpressionLiteralNode(rhs, t)
