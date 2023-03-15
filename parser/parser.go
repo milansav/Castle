@@ -232,10 +232,10 @@ func createProgramNode() *AST_Program {
 	return prog
 }
 
-func createExpressionLiteralNode(value string) *AST_Expression {
+func createExpressionLiteralNode(value string, t LiteraltType) *AST_Expression {
 	literal := &AST_Literal{
 		Value: value,
-		Type:  LT_UNDEFINED,
+		Type:  t,
 	}
 	expr := &AST_Expression{
 		EType:   ET_LITERAL,
@@ -695,8 +695,22 @@ func primary(parser *Parser) *AST_Expression {
 
 	if accept(parser, lexer.LT_LITERAL_NUMBER) || accept(parser, lexer.LT_LITERAL_FLOAT) || accept(parser, lexer.LT_LITERAL_STRING) || accept(parser, lexer.LT_LITERAL_BOOL) {
 		rhs := prev(parser).Label
+		prevType := prev(parser).Type
 
-		expr := createExpressionLiteralNode(rhs)
+		t := LT_UNDEFINED
+
+		switch prevType {
+		case lexer.LT_LITERAL_NUMBER:
+			t = LT_NUMBER
+		case lexer.LT_LITERAL_FLOAT:
+			t = LT_FLOAT
+		case lexer.LT_LITERAL_STRING:
+			t = LT_STRING
+		case lexer.LT_LITERAL_BOOL:
+			t = LT_BOOL
+		}
+
+		expr := createExpressionLiteralNode(rhs, t)
 		return expr
 	} else if accept(parser, lexer.LT_IDENTIFIER) {
 		name := prev(parser).Label
