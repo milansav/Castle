@@ -16,11 +16,8 @@
 
 // const a = 0;
 
-// if (3 > 2  or 3 < 4) {
-//     const c = a + b;
-//     const c = a + b;
-//     const c = a + b;
-// }
+if (3 > 2  or 3 < 4) {
+}
 
 const main = (argc, argv) => {};
 const main = (argc, argv) => {};

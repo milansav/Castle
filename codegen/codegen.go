@@ -145,6 +145,13 @@ func (codegen *Codegen) PrintStatement(statement *parser.AST_Statement) {
 		codegen.Out(";\n")
 	case parser.ST_STRUCT:
 	case parser.ST_IF:
+		codegen.Out("if (")
+		codegen.PrintExpression(statement.If.Condition)
+		codegen.Out(") {\n")
+		for _, statement := range statement.If.Statements {
+			codegen.PrintStatement(statement)
+		}
+		codegen.Out("}\n")
 	}
 }
 
