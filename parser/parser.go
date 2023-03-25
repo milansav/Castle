@@ -655,8 +655,6 @@ func memberAccess(parser *Parser) *AST_Expression {
 	lhs := primary(parser)
 	root := lhs
 
-	fmt.Println(root)
-
 	if curr(parser).Type == lexer.LT_PERIOD {
 		lhs.EType = ET_MEMBER_ACCESS
 	}
@@ -691,8 +689,6 @@ func memberAccess(parser *Parser) *AST_Expression {
 
 func primary(parser *Parser) *AST_Expression {
 
-	fmt.Println(curr(parser))
-
 	if accept(parser, lexer.LT_LITERAL_NUMBER) || accept(parser, lexer.LT_LITERAL_FLOAT) || accept(parser, lexer.LT_LITERAL_STRING) || accept(parser, lexer.LT_LITERAL_BOOL) {
 		rhs := prev(parser).Label
 		prevType := prev(parser).Type
@@ -714,10 +710,6 @@ func primary(parser *Parser) *AST_Expression {
 		return expr
 	} else if accept(parser, lexer.LT_IDENTIFIER) {
 		name := prev(parser).Label
-
-		fmt.Println(prev(parser))
-
-		fmt.Println(name)
 
 		expressions := make([]*AST_Expression, 0)
 

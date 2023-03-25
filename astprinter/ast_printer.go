@@ -108,6 +108,15 @@ func (printer *ASTPrinter) PrintStatement(statement *parser.AST_Statement) {
 		printer.Group("Struct")
 	case parser.ST_IF:
 		printer.Group("If")
+
+		printer.Info("Condition")
+
+		printer.In()
+
+		printer.PrintExpression(statement.If.Condition)
+
+		printer.Out()
+
 		printer.Info("Body")
 
 		printer.In()
@@ -203,6 +212,10 @@ func (printer *ASTPrinter) PrintExpression(expression *parser.AST_Expression) {
 			printer.Group("XNAND")
 		case lexer.LT_XNOR:
 			printer.Group("XNOR")
+		case lexer.LT_LCHEVRON:
+			printer.Group("LESS THAN")
+		case lexer.LT_RCHEVRON:
+			printer.Group("GREATER THAN")
 		default:
 			printer.Group("UNKNOWN")
 		}

@@ -1,23 +1,31 @@
 // $$ indicates macro
-const $$main = (argc, argv) => {
-    const c = "Hello World";
-};
+// const $$main = (argc, argv) => {
+//     const c = "Hello World";
+// };
 
 //function with one statement
-const singleStatement = (a) => 
-    myFunction(1+1, "Hello World", identifier);
+// const singleStatement = (a) => 
+//     myFunction(1+1, "Hello World", identifier);
 
 //function with more statements
-const myFunction = (a, b) => {
-    const c = a + b;
-};
+// const myFunction = (a, b) => {
+//     const c = a + b;
+// };
 
-myFunction(3,2);
+// myFunction(3,2);
 
-const a = 0;
+// const a = 0;
 
-if (3 > 2  or 3 < 4) {
-    const c = a + b;
-    const c = a + b;
-    const c = a + b;
-}
+// if (3 > 2  or 3 < 4) {
+//     const c = a + b;
+//     const c = a + b;
+//     const c = a + b;
+// }
+
+const main = (argc, argv) => {};
+const main = (argc, argv) => {};
+const main = (argc, argv) => {};
+const main = (argc, argv) => {};
+const main = (argc, argv) => {};
+
+const a = 2;
