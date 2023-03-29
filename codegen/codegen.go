@@ -108,13 +108,24 @@ func stringifyOperator(lt lexer.LexemeType) string {
 func (codegen *Codegen) PrintStatement(statement *parser.AST_Statement) {
 	switch statement.SType {
 	case parser.ST_STATEMENT_ARRAY:
+		for _, statement := range statement.Statements {
+			codegen.PrintStatement(statement)
+		}
 	case parser.ST_STATEMENT:
 	case parser.ST_EXPRESSION:
+		codegen.PrintExpression(statement.Expression)
+		codegen.Out(";\n")
 	case parser.ST_FUNCTION:
 		codegen.Out("void ")
 		codegen.Out(statement.Function.Name)
 		codegen.Out("() {\n")
-		codegen.PrintStatement(statement.Function.Statement)
+		if statement.Function.Statement.Statement != nil {
+			codegen.Out("return ")
+			codegen.PrintStatement(statement.Function.Statement.Statement)
+			codegen.Out(";\n")
+		} else {
+			codegen.PrintStatement(statement.Function.Statement)
+		}
 		codegen.Out("}\n")
 	case parser.ST_DECLARATION:
 		e := findFirstLiteral(statement.Declaration.Value)
@@ -168,6 +179,8 @@ func (codegen *Codegen) PrintExpression(expression *parser.AST_Expression) {
 		codegen.PrintLiteral(expression.Literal)
 	case parser.ET_FUNCTION_CALL:
 		codegen.PrintFunctionCall(expression.FunctionCall)
+	case parser.ET_IDENTIFIER:
+		codegen.Out(expression.Value)
 	}
 
 }
@@ -179,9 +192,7 @@ func (codegen *Codegen) PrintLiteral(literal *parser.AST_Literal) {
 	case parser.TYPE_FLOAT:
 		codegen.Out(literal.Value)
 	case parser.TYPE_STRING:
-		codegen.Out("\"")
 		codegen.Out(literal.Value)
-		codegen.Out("\"")
 	case parser.TYPE_BOOL:
 		codegen.Out(literal.Value)
 	case parser.TYPE_UNDEFINED:
@@ -192,8 +203,12 @@ func (codegen *Codegen) PrintLiteral(literal *parser.AST_Literal) {
 func (codegen *Codegen) PrintFunctionCall(functionCall *parser.AST_FunctionCall) {
 	codegen.Out(functionCall.Name)
 	codegen.Out("(")
-	for _, param := range functionCall.Params {
+	for index, param := range functionCall.Params {
 		codegen.PrintExpression(param)
+
+		if index < len(functionCall.Params)-1 {
+			codegen.Out(",")
+		}
 	}
 	codegen.Out(")")
 }

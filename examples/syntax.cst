@@ -1,20 +1,23 @@
 // $$ indicates macro
-// const $$main = (argc, argv) => {
-//     const c = "Hello World";
-// };
+ const $$main = (argc, argv) => {
+     const c = "Hello World";
+ };
 
 //function with one statement
-// const singleStatement = (a) => 
-//     myFunction(1+1, "Hello World", identifier);
+ const singleStatement = (a) => 
+     myFunction(1+1, "Hello World", identifier);
 
 //function with more statements
-// const myFunction = (a, b) => {
-//     const c = a + b;
-// };
+ const main = (a, b) => {
+    const out = "Hello World";
 
-// myFunction(3,2);
+    printf("%s", out);
+ };
 
-// const a = 0;
+myFunction(3,2);
+
+const a = 0;
+const string = "Hello World";
 
 if (3 > 2  or 3 < 4) {
 }
