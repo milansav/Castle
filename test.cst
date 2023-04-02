@@ -1,0 +1,7 @@
+const main = (argc, argv) => {
+    const out = "Hello World";
+
+    printf("%s", out);
+
+    return 0;
+};
