@@ -60,8 +60,8 @@ func findFirstLiteral(node interface{}) *parser.AST_Literal {
 				return result
 			}
 		}
-		if n.Literal != nil {
-			return n.Literal
+		if n.Value != nil {
+			return n.Value
 		}
 		if n.FunctionCall != nil {
 			if result := findFirstLiteral(n.FunctionCall); result != nil {
@@ -175,12 +175,12 @@ func (codegen *Codegen) PrintExpression(expression *parser.AST_Expression) {
 		codegen.Out(stringifyOperator(expression.Operator))
 		codegen.Out(" ")
 		codegen.PrintExpression(expression.Rhs)
-	case parser.ET_LITERAL:
-		codegen.PrintLiteral(expression.Literal)
+	case parser.ET_VALUE:
+		codegen.PrintLiteral(expression.Value)
 	case parser.ET_FUNCTION_CALL:
 		codegen.PrintFunctionCall(expression.FunctionCall)
 	case parser.ET_IDENTIFIER:
-		codegen.Out(expression.Value)
+		codegen.Out(expression.Identifier)
 	}
 
 }
