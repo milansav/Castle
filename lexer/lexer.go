@@ -257,7 +257,7 @@ func identifier(lexer *Lexer) Lexeme {
 
 	start := lexer.currentStep
 
-	for unicode.IsLetter(currentRune(lexer)) || unicode.IsDigit(currentRune(lexer)) {
+	for unicode.IsLetter(currentRune(lexer)) || unicode.IsDigit(currentRune(lexer)) || unicode.IsSymbol(currentRune(lexer)) {
 		step(lexer)
 	}
 

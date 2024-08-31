@@ -93,12 +93,12 @@ func expect(parser *Parser, symbol lexer.LexemeType) bool {
 
 type ExpressionType int
 type StatementType int
-type LiteraltType int
+type ValueType int
 
 const (
 	ET_BINARY ExpressionType = iota
 	ET_UNARY
-	ET_LITERAL
+	ET_VALUE
 	ET_IDENTIFIER
 	ET_GROUP
 	ET_EXPRESSION_ARRAY
@@ -109,7 +109,7 @@ const (
 var ExpressionTypeLabels = map[ExpressionType]string{
 	ET_BINARY:           "ET_BINARY",
 	ET_UNARY:            "ET_UNARY",
-	ET_LITERAL:          "ET_LITERAL",
+	ET_VALUE:            "ET_LITERAL",
 	ET_IDENTIFIER:       "ET_IDENTIFIER",
 	ET_GROUP:            "ET_GROUP",
 	ET_EXPRESSION_ARRAY: "ET_EXPRESSION_ARRAY",
@@ -140,34 +140,48 @@ var StatementTypeLabels = map[StatementType]string{
 }
 
 const (
-	TYPE_STRING LiteraltType = iota
+	TYPE_UNDEFINED ValueType = iota
+
+	// Primitives
+	TYPE_STRING
 	TYPE_NUMBER
 	TYPE_FLOAT
 	TYPE_BOOL
-	TYPE_UNDEFINED
+
+	// Complex types
+	TYPE_STRUCT
+	TYPE_FUNCTION
 )
 
-var LiteralTypeLabels = map[LiteraltType]string{
-	TYPE_STRING:    "TYPE_STRING",
-	TYPE_NUMBER:    "TYPE_NUMBER",
-	TYPE_FLOAT:     "TYPE_FLOAT",
-	TYPE_BOOL:      "TYPE_BOOL",
+var LiteralTypeLabels = map[ValueType]string{
 	TYPE_UNDEFINED: "TYPE_UNDEFINED",
+
+	TYPE_STRING: "TYPE_STRING",
+	TYPE_NUMBER: "TYPE_NUMBER",
+	TYPE_FLOAT:  "TYPE_FLOAT",
+	TYPE_BOOL:   "TYPE_BOOL",
+
+	TYPE_STRUCT:   "TYPE_STRUCT",
+	TYPE_FUNCTION: "TYPE_FUNCTION",
 }
 
 type AST_Expression struct {
 	EType        ExpressionType
 	Lhs          *AST_Expression
 	Operator     lexer.LexemeType
-	Value        string
-	Literal      *AST_Literal
+	Identifier   string
+	Value        *AST_Value
 	FunctionCall *AST_FunctionCall
 	Rhs          *AST_Expression
 }
 
-type AST_Literal struct {
-	Value string
-	Type  LiteraltType
+type AST_Struct struct{}
+
+type AST_Value struct {
+	Literal  string
+	Function *AST_Function
+	Struct   *AST_Struct
+	Type     ValueType
 }
 
 type AST_FunctionCall struct {
@@ -214,6 +228,26 @@ func createDeclarationNode(name string, value *AST_Expression) *AST_Declaration 
 	return decl
 }
 
+func createFunctionDeclarationNode(name string, function *AST_Function) *AST_Declaration {
+
+	funcDelc := &AST_Value{
+		Function: function,
+		Type:     TYPE_FUNCTION,
+	}
+
+	expr := &AST_Expression{
+		Value: funcDelc,
+		EType: ET_VALUE,
+	}
+
+	decl := &AST_Declaration{
+		Value: expr,
+		Name:  name,
+	}
+
+	return decl
+}
+
 func createFunctionNode(name string, props []string, statement *AST_Statement) *AST_Function {
 	fn := &AST_Function{
 		Name:      name,
@@ -232,14 +266,14 @@ func createProgramNode() *AST_Program {
 	return prog
 }
 
-func createExpressionLiteralNode(value string, t LiteraltType) *AST_Expression {
-	literal := &AST_Literal{
-		Value: value,
-		Type:  t,
+func createExpressionLiteralNode(value string, t ValueType) *AST_Expression {
+	literal := &AST_Value{
+		Literal: value,
+		Type:    t,
 	}
 	expr := &AST_Expression{
-		EType:   ET_LITERAL,
-		Literal: literal,
+		EType: ET_VALUE,
+		Value: literal,
 	}
 
 	return expr
@@ -247,8 +281,8 @@ func createExpressionLiteralNode(value string, t LiteraltType) *AST_Expression {
 
 func createExpressionIdentifierNode(value string) *AST_Expression {
 	expr := &AST_Expression{
-		EType: ET_IDENTIFIER,
-		Value: value,
+		EType:      ET_IDENTIFIER,
+		Identifier: value,
 	}
 
 	return expr
@@ -256,12 +290,12 @@ func createExpressionIdentifierNode(value string) *AST_Expression {
 
 func createExpressionUnaryNode(operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_rhs := &AST_Expression{
-		EType:    rhs.EType,
-		Lhs:      rhs.Lhs,
-		Operator: rhs.Operator,
-		Rhs:      rhs.Rhs,
-		Value:    rhs.Value,
-		Literal:  rhs.Literal,
+		EType:      rhs.EType,
+		Lhs:        rhs.Lhs,
+		Operator:   rhs.Operator,
+		Rhs:        rhs.Rhs,
+		Identifier: rhs.Identifier,
+		Value:      rhs.Value,
 	}
 
 	expr := &AST_Expression{
@@ -275,29 +309,29 @@ func createExpressionUnaryNode(operator lexer.LexemeType, rhs *AST_Expression) *
 
 func createExpressionBinaryNode(lhs *AST_Expression, operator lexer.LexemeType, rhs *AST_Expression) *AST_Expression {
 	_lhs := &AST_Expression{
-		EType:    lhs.EType,
-		Lhs:      lhs.Lhs,
-		Operator: lhs.Operator,
-		Rhs:      lhs.Rhs,
-		Value:    lhs.Value,
-		Literal:  lhs.Literal,
+		EType:      lhs.EType,
+		Lhs:        lhs.Lhs,
+		Operator:   lhs.Operator,
+		Rhs:        lhs.Rhs,
+		Identifier: lhs.Identifier,
+		Value:      lhs.Value,
 	}
 
 	_rhs := &AST_Expression{
-		EType:    rhs.EType,
-		Lhs:      rhs.Lhs,
-		Operator: rhs.Operator,
-		Rhs:      rhs.Rhs,
-		Value:    rhs.Value,
-		Literal:  rhs.Literal,
+		EType:      rhs.EType,
+		Lhs:        rhs.Lhs,
+		Operator:   rhs.Operator,
+		Rhs:        rhs.Rhs,
+		Identifier: rhs.Identifier,
+		Value:      rhs.Value,
 	}
 
 	expr := &AST_Expression{
-		EType:    ET_BINARY,
-		Lhs:      _lhs,
-		Operator: operator,
-		Rhs:      _rhs,
-		Value:    "",
+		EType:      ET_BINARY,
+		Lhs:        _lhs,
+		Operator:   operator,
+		Rhs:        _rhs,
+		Identifier: "",
 	}
 
 	return expr
@@ -306,11 +340,11 @@ func createExpressionBinaryNode(lhs *AST_Expression, operator lexer.LexemeType, 
 func createExpressionGroupNode(lhs *AST_Expression) *AST_Expression {
 
 	expr := &AST_Expression{
-		EType:    ET_GROUP,
-		Lhs:      lhs,
-		Operator: lexer.LT_NONE,
-		Rhs:      nil,
-		Value:    "",
+		EType:      ET_GROUP,
+		Lhs:        lhs,
+		Operator:   lexer.LT_NONE,
+		Rhs:        nil,
+		Identifier: "",
 	}
 
 	return expr
@@ -386,14 +420,13 @@ func statement(parser *Parser) *AST_Statement {
 
 	currentStatement := &AST_Statement{}
 
-	fmt.Println("statement")
-
 	if accept(parser, lexer.LT_VAL) || accept(parser, lexer.LT_CONST) { // LET / CONST
 
 		// variableType := prev(parser)
 
 		if accept(parser, lexer.LT_MACRO) {
 			// TODO Is macro
+			log.Panic("Macro not implemented yet")
 		}
 
 		// Declare variable type here to be used later
@@ -417,12 +450,15 @@ func statement(parser *Parser) *AST_Statement {
 							} else {
 								expect(parser, lexer.LT_COMMA)
 							}
+						} else {
+							expect(parser, lexer.LT_RPAREN)
+							break
 						}
 					}
 
 					expect(parser, lexer.LT_LAMBDA) // LET / CONST {name} = ((params)) =>
 
-					currentStatement.SType = ST_FUNCTION
+					currentStatement.SType = ST_DECLARATION
 
 					functionStatements := &AST_Statement{}
 
@@ -447,7 +483,9 @@ func statement(parser *Parser) *AST_Statement {
 						functionStatements.Statement = statement(parser) // LET / CONST {name} = ((params)) => {statement}
 					}
 
-					currentStatement.Function = createFunctionNode(identifier.Label, params, functionStatements)
+					function := createFunctionNode(identifier.Label, params, functionStatements)
+
+					currentStatement.Declaration = createFunctionDeclarationNode(identifier.Label, function)
 
 					return currentStatement
 				} else {
@@ -499,7 +537,6 @@ func statement(parser *Parser) *AST_Statement {
 
 		return currentStatement
 	} else {
-		fmt.Println("Caught expression")
 		expr := expression(parser)
 
 		currentStatement.SType = ST_EXPRESSION

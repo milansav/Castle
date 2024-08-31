@@ -226,13 +226,13 @@ func (printer *ASTPrinter) PrintExpression(expression *parser.AST_Expression) {
 		printer.In()
 		printer.PrintExpression(expression.Rhs)
 		printer.Out()
-	case parser.ET_LITERAL:
+	case parser.ET_VALUE:
 		printer.Group("Literal")
-		printer.Value("Value", expression.Literal.Value)
-		printer.Value("Type", parser.LiteralTypeLabels[expression.Literal.Type])
+		printer.Value("Value", expression.Value.Literal)
+		printer.Value("Type", parser.LiteralTypeLabels[expression.Value.Type])
 	case parser.ET_IDENTIFIER:
 		printer.Group("Identifier")
-		printer.Value("Name", expression.Value)
+		printer.Value("Name", expression.Identifier)
 	case parser.ET_FUNCTION_CALL:
 		printer.Group("Call")
 		printer.Value("Name", expression.FunctionCall.Name)

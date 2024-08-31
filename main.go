@@ -6,7 +6,6 @@ import (
 
 	"github.com/milansav/Castle/astprinter"
 	"github.com/milansav/Castle/cli"
-	"github.com/milansav/Castle/codegen"
 	"github.com/milansav/Castle/lexer"
 	"github.com/milansav/Castle/parser"
 )
@@ -28,11 +27,11 @@ func main() {
 		mainLexer := lexer.Create(string(contents))
 		mainLexer.Start()
 
-		fmt.Println("-----LEXICAL ANALYSIS-----")
+		// fmt.Println("-----LEXICAL ANALYSIS-----")
 
-		for _, element := range mainLexer.Lexemes {
-			fmt.Printf("Label: %s, Type: %s\n", element.Label, lexer.LexemeTypeLabels[element.Type])
-		}
+		// for _, element := range mainLexer.Lexemes {
+		// 	fmt.Printf("Label: %s, Type: %s\n", element.Label, lexer.LexemeTypeLabels[element.Type])
+		// }
 
 		fmt.Println("------SYNTAX ANALYSIS-----")
 
@@ -42,12 +41,5 @@ func main() {
 		fmt.Println("---ABSTRACT SYNTAX TREE---")
 
 		astprinter.PrintAST(program)
-
-		fmt.Println("------CODE GENERATION-----")
-
-		mainCodegen := codegen.Create(program)
-		mainCodegen.Start()
-
-		fmt.Println(mainCodegen.OutBuffer)
 	}
 }

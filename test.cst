@@ -1,7 +1,15 @@
-const main = (argc, argv) => {
+const main🤪 = (argc, argv) => {
     const out = "Hello World";
 
     printf("%s", out);
 
     return 0;
+};
+
+const sum = (a) => {
+    const sum2 = (b) => {
+        return a + b;
+    };
+
+    return sum2;
 };

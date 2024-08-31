@@ -2,6 +2,7 @@ const myFunction = (a, b) => {
     val c = 3 + 4 * 6;
 };
 
+const a = "hello world";
 
 const myFunction2 = (a, b) => {
     const c = 3;
@@ -10,7 +11,7 @@ const myFunction2 = (a, b) => {
 const myFunction2 = (a, b) => {
     const c = 3;
     return c;
-}; 
+};
 
 myFunction(1+2, a+c);
 1+2, 3*3, 4/5, c*d, 3 and 4, 5 or 6, 12 >= 45;
